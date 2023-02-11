@@ -15,10 +15,16 @@ void SafeRelease(DirectXClass *pointer)
 
 }
 
+Renderer& Renderer::GetInstance() {
+     static Renderer instance;
+     return instance;
+}
+
 Renderer::Renderer() :
      pDevice_(NULL),
      pDeviceContext_(NULL),
      pSwapChain_(NULL),
+     pBackBufferRTV_(NULL),
      width_(defaultWidth),
      height_(defaultHeight)
 {
@@ -26,11 +32,14 @@ Renderer::Renderer() :
 
 Renderer::~Renderer()
 {
-     ReleaseAll();
+     CleanAll();
 }
 
-void Renderer::ReleaseAll()
+void Renderer::CleanAll()
 {
+     if (NULL != pDeviceContext_)
+          pDeviceContext_->ClearState();
+
      SafeRelease(pBackBufferRTV_);
      SafeRelease(pDevice_);
      SafeRelease(pDeviceContext_);
@@ -129,7 +138,7 @@ bool Renderer::Render()
      pDeviceContext_->ClearRenderTargetView(pBackBufferRTV_, backColor);
 
      HRESULT result = pSwapChain_->Present(0, 0);
-     if (SUCCEEDED(result))
+     if (!SUCCEEDED(result))
           return false;
 
      return true;
@@ -137,5 +146,36 @@ bool Renderer::Render()
 
 bool Renderer::Resize(const unsigned width, const unsigned height)
 {
+     if (NULL == pSwapChain_)
+          return false;
+
+     pDeviceContext_->OMSetRenderTargets(0, 0, 0);
+     pBackBufferRTV_->Release();
+
+     auto result = pSwapChain_->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+     if (!SUCCEEDED(result))
+          return false;
+
+     ID3D11Texture2D *pBuffer;
+     result = pSwapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&pBuffer));
+     if (!SUCCEEDED(result))
+          return false;
+
+     result = pDevice_->CreateRenderTargetView(pBuffer, NULL, &pBackBufferRTV_);
+     pBuffer->Release();
+     if (!SUCCEEDED(result))
+          return false;
+
+     pDeviceContext_->OMSetRenderTargets(1, &pBackBufferRTV_, NULL);
+
+     D3D11_VIEWPORT vp;
+     vp.Width = (FLOAT)width;
+     vp.Height = (FLOAT)height;
+     vp.MinDepth = 0.0f;
+     vp.MaxDepth = 1.0f;
+     vp.TopLeftX = 0;
+     vp.TopLeftY = 0;
+     pDeviceContext_->RSSetViewports(1, &vp);
+
      return true;
 }

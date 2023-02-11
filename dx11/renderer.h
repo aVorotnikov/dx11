@@ -7,9 +7,12 @@
 class Renderer
 {
 public:
-     Renderer();
+     static Renderer& GetInstance();
+     Renderer(const Renderer &) = delete;
+     Renderer(Renderer &&) = delete;
+
      ~Renderer();
-     void ReleaseAll();
+     void CleanAll();
 
      bool Init(const HWND hWnd);
      bool Render();
@@ -17,7 +20,10 @@ public:
 
      static constexpr const unsigned defaultWidth = 1280;
      static constexpr const unsigned defaultHeight = 720;
+
 private:
+     Renderer();
+
      ID3D11Device *pDevice_;
      ID3D11DeviceContext *pDeviceContext_;
      IDXGISwapChain *pSwapChain_;

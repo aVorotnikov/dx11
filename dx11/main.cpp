@@ -2,11 +2,16 @@
 
 #include <windows.h>
 
+#define __CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#define new DEBUG_NEW
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-     // Register the window class.
+     // Register the window class
      const wchar_t CLASS_NAME[] = L"Sample Window Class";
 
      WNDCLASS wc = {};
@@ -17,10 +22,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
      RegisterClass(&wc);
 
-     // Create the window.
-
-     HWND hwnd = CreateWindowEx(
-          0,                              // Optional window styles.
+     // Create the window
+     HWND hWnd = CreateWindowEx(
+          0,                              // Optional window styles
           CLASS_NAME,                     // Window class
           L"DirectX11",                   // Window text
           WS_OVERLAPPEDWINDOW,            // Window style
@@ -28,13 +32,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
           // Size and position
           CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 
-          NULL,       // Parent window    
+          NULL,       // Parent window
           NULL,       // Menu
           hInstance,  // Instance handle
           NULL        // Additional application data
      );
 
-     if (hwnd == NULL)
+     if (NULL == hWnd)
           return 0;
 
      RECT rc;
@@ -43,15 +47,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
      rc.top = 0;
      rc.bottom = Renderer::defaultHeight;
      AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, TRUE);
-     MoveWindow(hwnd, 100, 100, rc.right - rc.left, rc.bottom - rc.top, TRUE);
+     MoveWindow(hWnd, 100, 100, rc.right - rc.left, rc.bottom - rc.top, TRUE);
 
-     ShowWindow(hwnd, nCmdShow);
+     ShowWindow(hWnd, nCmdShow);
 
-     Renderer renderer;
-     if (!renderer.Init(hwnd))
+     auto &renderer = Renderer::GetInstance();
+     if (!renderer.Init(hWnd))
           return EXIT_FAILURE;
 
-     // Run the message loop.
+     // Run the message loop
      MSG msg = {};
      HACCEL hAccelTable = LoadAccelerators(hInstance, L"");
      bool exit = false;
@@ -73,7 +77,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
      return 0;
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
      switch (uMsg)
      {
@@ -84,10 +88,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
           case WM_PAINT:
           {
                PAINTSTRUCT ps;
-               HDC hdc = BeginPaint(hwnd, &ps);
-               EndPaint(hwnd, &ps);
+               HDC hdc = BeginPaint(hWnd, &ps);
+               EndPaint(hWnd, &ps);
           }
+
+          case WM_SIZE:
+          {
+               RECT rc;
+               GetClientRect(hWnd, &rc);
+               Renderer::GetInstance().Resize(rc.right - rc.left, rc.bottom - rc.top);
+          }
+
           return 0;
      }
-     return DefWindowProc(hwnd, uMsg, wParam, lParam);
+     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
