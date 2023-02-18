@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <dxgi.h>
 #include <windows.h>
+#include <array>
 
 class Renderer
 {
@@ -28,6 +29,12 @@ private:
      ID3D11DeviceContext *pDeviceContext_;
      IDXGISwapChain *pSwapChain_;
      ID3D11RenderTargetView *pBackBufferRTV_;
+
+     ID3D11VertexShader *pVertexShader_;
+     ID3D11PixelShader *pPixelShader_;
+     ID3D11InputLayout *pInputLayout_;
+     ID3D11Buffer *pVertexBuffer_;
+     ID3D11Buffer *pIndexBuffer_;
 
      unsigned width_;
      unsigned height_;

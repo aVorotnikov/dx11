@@ -1,5 +1,8 @@
 ﻿#include "renderer.h"
 
+#include <d3dcompiler.h>
+#include <string>
+
 namespace
 {
 
@@ -8,6 +11,50 @@ namespace
      {
           if (NULL != pointer)
                pointer->Release();
+     }
+
+     struct Vertex
+     {
+          float x, y, z;
+          COLORREF color;
+     };
+
+     HRESULT SetResourceName(ID3D11DeviceChild *pResource, const std::string &name)
+     {
+          return pResource->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)name.length(), name.c_str());
+     }
+
+     HRESULT CompileShaderFromFile(const WCHAR *szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob **ppBlobOut)
+     {
+
+          DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+          dwShaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+          ID3DBlob *pErrorBlob = NULL;
+          auto hr = D3DCompileFromFile(
+               szFileName,
+               NULL,
+               NULL,
+               szEntryPoint,
+               szShaderModel,
+               dwShaderFlags,
+               0,
+               ppBlobOut,
+               &pErrorBlob);
+          if (FAILED(hr))
+          {
+               if (pErrorBlob)
+               {
+                    OutputDebugStringA(reinterpret_cast<const char *>(pErrorBlob->GetBufferPointer()));
+                    pErrorBlob->Release();
+               }
+               return hr;
+          }
+
+          SafeRelease(pErrorBlob);
+          return S_OK;
      }
 
 }
@@ -22,6 +69,11 @@ Renderer::Renderer() :
      pDeviceContext_(NULL),
      pSwapChain_(NULL),
      pBackBufferRTV_(NULL),
+     pVertexShader_(NULL),
+     pPixelShader_(NULL),
+     pInputLayout_(NULL),
+     pVertexBuffer_(NULL),
+     pIndexBuffer_(NULL),
      width_(defaultWidth),
      height_(defaultHeight)
 {
@@ -37,6 +89,11 @@ void Renderer::CleanAll()
      if (NULL != pDeviceContext_)
           pDeviceContext_->ClearState();
 
+     SafeRelease(pIndexBuffer_);
+     SafeRelease(pVertexBuffer_);
+     SafeRelease(pInputLayout_);
+     SafeRelease(pPixelShader_);
+     SafeRelease(pVertexShader_);
      SafeRelease(pBackBufferRTV_);
      SafeRelease(pDevice_);
      SafeRelease(pDeviceContext_);
@@ -118,9 +175,125 @@ bool Renderer::Init(const HWND hWnd)
      if (!SUCCEEDED(result))
           return false;
      result = pDevice_->CreateRenderTargetView(pBackBuffer, NULL, &pBackBufferRTV_);
+     SafeRelease(pBackBuffer);
      if (!SUCCEEDED(result))
           return false;
-     SafeRelease(pBackBuffer);
+
+     pDeviceContext_->OMSetRenderTargets(1, &pBackBufferRTV_, nullptr);
+
+     // Compile the vertex shader
+     ID3DBlob *pVertexShaderBlob = NULL;
+     result = CompileShaderFromFile(L"vertex.hlsl", "main", "vs_5_0", &pVertexShaderBlob);
+     if (FAILED(result))
+     {
+          MessageBox(NULL, L"Failed to compile vertex shader", L"Error", MB_OK);
+          return false;
+     }
+
+     // Create the vertex shader
+     result = pDevice_->CreateVertexShader(
+          pVertexShaderBlob->GetBufferPointer(),
+          pVertexShaderBlob->GetBufferSize(),
+          NULL,
+          &pVertexShader_);
+     if (FAILED(result))
+     {
+          pVertexShaderBlob->Release();
+          return false;
+     }
+
+     // Define the input layout
+     D3D11_INPUT_ELEMENT_DESC layout[] =
+     {
+          {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+          {"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+     };
+     UINT numElements = ARRAYSIZE(layout);
+
+     // Create the input layout
+     result = pDevice_->CreateInputLayout(
+          layout,
+          numElements,
+          pVertexShaderBlob->GetBufferPointer(),
+          pVertexShaderBlob->GetBufferSize(),
+          &pInputLayout_);
+     pVertexShaderBlob->Release();
+     if (FAILED(result))
+          return false;
+
+     // Set the input layout
+     pDeviceContext_->IASetInputLayout(pInputLayout_);
+
+     // Compile the pixel shader
+     ID3DBlob *pPixelShaderBlob = NULL;
+     result = CompileShaderFromFile(L"pixel.hlsl", "main", "ps_5_0", &pPixelShaderBlob);
+     if (FAILED(result))
+     {
+          MessageBox(NULL, L"Failed to compile pixel shader", L"Error", MB_OK);
+          return false;
+     }
+
+     // Create the pixel shader
+     result = pDevice_->CreatePixelShader(
+          pPixelShaderBlob->GetBufferPointer(),
+          pPixelShaderBlob->GetBufferSize(),
+          nullptr,
+          &pPixelShader_);
+     pPixelShaderBlob->Release();
+     if (FAILED(result))
+          return false;
+
+     // Create vertex buffer for triangle
+     static const Vertex triangleVertices[] =
+     {
+          {-0.5f, -0.5f, 0.0f, RGB(255, 0, 0)},
+          {0.5f, -0.5f, 0.0f, RGB(0, 255, 0)},
+          {0.0f, 0.5f, 0.0f, RGB(0, 0, 255)}
+     };
+     D3D11_BUFFER_DESC desc;
+     ZeroMemory(&desc, sizeof(desc));
+     desc.ByteWidth = sizeof(triangleVertices);
+     desc.Usage = D3D11_USAGE_DEFAULT;
+     desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+     desc.CPUAccessFlags = 0;
+     desc.MiscFlags = 0;
+     desc.StructureByteStride = 0;
+
+     D3D11_SUBRESOURCE_DATA data;
+     ZeroMemory(&data, sizeof(data));
+     data.pSysMem = &triangleVertices;
+     data.SysMemPitch = sizeof(triangleVertices);
+     data.SysMemSlicePitch = 0;
+
+     result = pDevice_->CreateBuffer(&desc, &data, &pVertexBuffer_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pVertexBuffer_, "VertexBuffer");
+     if (FAILED(result))
+          return false;
+
+     // Create index buffer for triangle
+     static const USHORT triangleIndices[] = {0, 2, 1};
+
+     ZeroMemory(&desc, sizeof(desc));
+     desc.ByteWidth = sizeof(triangleIndices);
+     desc.Usage = D3D11_USAGE_DEFAULT;
+     desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+     desc.CPUAccessFlags = 0;
+     desc.MiscFlags = 0;
+     desc.StructureByteStride = 0;
+
+     ZeroMemory(&data, sizeof(data));
+     data.pSysMem = &triangleIndices;
+     data.SysMemPitch = sizeof(triangleIndices);
+     data.SysMemSlicePitch = 0;
+
+     result = pDevice_->CreateBuffer(&desc, &data, &pIndexBuffer_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pIndexBuffer_, "IndexBuffer");
+     if (FAILED(result))
+          return false;
 
      return true;
 }
@@ -133,6 +306,33 @@ bool Renderer::Render()
 
      static const FLOAT backColor[4] = {0.3f, 0.5f, 0.7f, 1.0f};
      pDeviceContext_->ClearRenderTargetView(pBackBufferRTV_, backColor);
+
+     D3D11_VIEWPORT viewport;
+     viewport.TopLeftX = 0;
+     viewport.TopLeftY = 0;
+     viewport.Width = (FLOAT)width_;
+     viewport.Height = (FLOAT)height_;
+     viewport.MinDepth = 0.0f;
+     viewport.MaxDepth = 1.0f;
+     pDeviceContext_->RSSetViewports(1, &viewport);
+
+     D3D11_RECT rect;
+     rect.left = 0;
+     rect.top = 0;
+     rect.right = width_;
+     rect.bottom = height_;
+     pDeviceContext_->RSSetScissorRects(1, &rect);
+
+     pDeviceContext_->IASetIndexBuffer(pIndexBuffer_, DXGI_FORMAT_R16_UINT, 0);
+     ID3D11Buffer *vertexBuffers[] = {pVertexBuffer_};
+     UINT strides[] = {16};
+     UINT offsets[] = {0};
+     pDeviceContext_->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
+     pDeviceContext_->IASetInputLayout(pInputLayout_);
+     pDeviceContext_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+     pDeviceContext_->VSSetShader(pVertexShader_, NULL, 0);
+     pDeviceContext_->PSSetShader(pPixelShader_, NULL, 0);
+     pDeviceContext_->DrawIndexed(3, 0, 0);
 
      HRESULT result = pSwapChain_->Present(0, 0);
      if (!SUCCEEDED(result))

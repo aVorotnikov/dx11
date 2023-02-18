@@ -16,6 +16,9 @@
     <Filter Include="Исходные файлы\renderer">
       <UniqueIdentifier>{f5bb1935-863d-4163-b8e2-107a447d3736}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы ресурсов\Shaders">
+      <UniqueIdentifier>{8f0956ae-869d-418f-ad8e-2473be27f30b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -29,5 +32,13 @@
     <ClInclude Include="renderer.h">
       <Filter>Исходные файлы\renderer</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="vertex.hlsl">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="pixel.hlsl">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

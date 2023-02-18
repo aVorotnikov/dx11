@@ -1,5 +1,4 @@
 #include "renderer.h"
-
 #include <windows.h>
 
 #define __CRTDBG_MAP_ALLOC
