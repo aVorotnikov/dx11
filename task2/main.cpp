@@ -1,12 +1,49 @@
 #include "renderer.h"
 #include <windows.h>
+#include <filesystem>
+#include <xstring>
 
 #define __CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #define new DEBUG_NEW
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+namespace
+{
+
+     constexpr const WCHAR projectName[] = L"task2";
+
+     LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+     {
+          switch (uMsg)
+          {
+               case WM_DESTROY:
+                    PostQuitMessage(0);
+                    return 0;
+
+               case WM_SIZE:
+               {
+                    RECT rc;
+                    GetClientRect(hWnd, &rc);
+                    Renderer::GetInstance().Resize(rc.right - rc.left, rc.bottom - rc.top);
+               }
+
+               return 0;
+          }
+          return DefWindowProc(hWnd, uMsg, wParam, lParam);
+     }
+
+     void FixExecutableDir()
+     {
+          WCHAR pathRaw[MAX_PATH];
+          std::wstring pathStr(pathRaw, GetModuleFileName(NULL, pathRaw, MAX_PATH));
+          auto path = std::filesystem::path(pathStr).parent_path();
+          while (projectName != path.filename())
+               path = path.parent_path();
+          SetCurrentDirectory(path.c_str());
+     }
+
+}
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
@@ -39,6 +76,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
      if (NULL == hWnd)
           return 0;
+
+     FixExecutableDir();
 
      RECT rc;
      rc.left = 0;
@@ -74,24 +113,4 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
      }
 
      return 0;
-}
-
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-     switch (uMsg)
-     {
-          case WM_DESTROY:
-               PostQuitMessage(0);
-               return 0;
-
-          case WM_SIZE:
-          {
-               RECT rc;
-               GetClientRect(hWnd, &rc);
-               Renderer::GetInstance().Resize(rc.right - rc.left, rc.bottom - rc.top);
-          }
-
-          return 0;
-     }
-     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
