@@ -1,7 +1,10 @@
 ﻿#include "renderer.h"
 
 #include <d3dcompiler.h>
+#include <DirectXMath.h>
+#include <chrono>
 #include <string>
+#include <cmath>
 
 namespace
 {
@@ -17,6 +20,16 @@ namespace
      {
           float x, y, z;
           COLORREF color;
+     };
+
+     struct SceneBuffer
+     {
+          DirectX::XMMATRIX viewProjMatrix;
+     };
+
+     struct WorldBuffer
+     {
+          DirectX::XMMATRIX worldMatrix;
      };
 
      HRESULT SetResourceName(ID3D11DeviceChild *pResource, const std::string &name)
@@ -74,8 +87,13 @@ Renderer::Renderer() :
      pInputLayout_(NULL),
      pVertexBuffer_(NULL),
      pIndexBuffer_(NULL),
+     pWorldBuffer_(NULL),
+     pSceneBuffer_(NULL),
+     pRasterizerState_(NULL),
+     pCamera_(NULL),
      width_(defaultWidth),
-     height_(defaultHeight)
+     height_(defaultHeight),
+     start_(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
 {
 }
 
@@ -89,6 +107,9 @@ void Renderer::CleanAll()
      if (NULL != pDeviceContext_)
           pDeviceContext_->ClearState();
 
+     SafeRelease(pRasterizerState_);
+     SafeRelease(pSceneBuffer_);
+     SafeRelease(pWorldBuffer_);
      SafeRelease(pIndexBuffer_);
      SafeRelease(pVertexBuffer_);
      SafeRelease(pInputLayout_);
@@ -100,8 +121,10 @@ void Renderer::CleanAll()
      SafeRelease(pSwapChain_);
 }
 
-bool Renderer::Init(const HWND hWnd)
+bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera)
 {
+     pCamera_ = pCamera;
+
      // Create a DirectX graphics interface factory.​
      IDXGIFactory *pFactory = nullptr;
      HRESULT result = CreateDXGIFactory(__uuidof(IDXGIFactory), (void **)&pFactory);
@@ -295,6 +318,75 @@ bool Renderer::Init(const HWND hWnd)
      if (FAILED(result))
           return false;
 
+     // Create const buffers
+     ZeroMemory(&desc, sizeof(desc));
+     desc.ByteWidth = sizeof(WorldBuffer);
+     desc.Usage = D3D11_USAGE_DEFAULT;
+     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+     desc.CPUAccessFlags = 0;
+     desc.MiscFlags = 0;
+     desc.StructureByteStride = 0;
+
+     result = pDevice_->CreateBuffer(&desc, NULL, &pWorldBuffer_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pWorldBuffer_, "WorldBuffer");
+     if (FAILED(result))
+          return false;
+
+     ZeroMemory(&desc, sizeof(desc));
+     desc.ByteWidth = sizeof(SceneBuffer);
+     desc.Usage = D3D11_USAGE_DEFAULT;
+     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+     desc.CPUAccessFlags = 0;
+     desc.MiscFlags = 0;
+     desc.StructureByteStride = 0;
+
+     result = pDevice_->CreateBuffer(&desc, NULL, &pSceneBuffer_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pSceneBuffer_, "SceneBuffer");
+     if (FAILED(result))
+          return false;
+
+     D3D11_RASTERIZER_DESC rasterizeDesc;
+     ZeroMemory(&rasterizeDesc, sizeof(rasterizeDesc));
+     rasterizeDesc.AntialiasedLineEnable = false;
+     rasterizeDesc.FillMode = D3D11_FILL_SOLID;
+     rasterizeDesc.CullMode = D3D11_CULL_NONE;
+     rasterizeDesc.DepthBias = 0;
+     rasterizeDesc.DepthBiasClamp = 0.0f;
+     rasterizeDesc.FrontCounterClockwise = false;
+     rasterizeDesc.DepthClipEnable = true;
+     rasterizeDesc.ScissorEnable = false;
+     rasterizeDesc.MultisampleEnable = false;
+     rasterizeDesc.SlopeScaledDepthBias = 0.0f;
+
+     result = pDevice_->CreateRasterizerState(&rasterizeDesc, &pRasterizerState_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pRasterizerState_, "RasterizeBuffer");
+     if (FAILED(result))
+          return false;
+
+     return true;
+}
+
+bool Renderer::Update()
+{
+     std::size_t countSec = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+     double angle = static_cast<double>(countSec - start_) / 1000;
+     WorldBuffer worldBuffer;
+     worldBuffer.worldMatrix =
+          DirectX::XMMatrixRotationY(-static_cast<float>(angle));
+     pDeviceContext_->UpdateSubresource(pWorldBuffer_, 0, NULL, &worldBuffer, 0, 0);
+
+     SceneBuffer sceneBuffer;
+     sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(
+          pCamera_->GetView(),
+          DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 3, width_ / static_cast<float>(height_), near_, far_));
+     pDeviceContext_->UpdateSubresource(pSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
+
      return true;
 }
 
@@ -323,6 +415,8 @@ bool Renderer::Render()
      rect.bottom = height_;
      pDeviceContext_->RSSetScissorRects(1, &rect);
 
+     pDeviceContext_->RSSetState(pRasterizerState_);
+
      pDeviceContext_->IASetIndexBuffer(pIndexBuffer_, DXGI_FORMAT_R16_UINT, 0);
      ID3D11Buffer *vertexBuffers[] = {pVertexBuffer_};
      UINT strides[] = {16};
@@ -331,6 +425,8 @@ bool Renderer::Render()
      pDeviceContext_->IASetInputLayout(pInputLayout_);
      pDeviceContext_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
      pDeviceContext_->VSSetShader(pVertexShader_, NULL, 0);
+     pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer_);
+     pDeviceContext_->VSSetConstantBuffers(1, 1, &pSceneBuffer_);
      pDeviceContext_->PSSetShader(pPixelShader_, NULL, 0);
      pDeviceContext_->DrawIndexed(3, 0, 0);
 

@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "camera.h"
 #include <windows.h>
 #include <filesystem>
 #include <xstring>
@@ -90,7 +91,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
      ShowWindow(hWnd, nCmdShow);
 
      auto &renderer = Renderer::GetInstance();
-     if (!renderer.Init(hWnd))
+     if (!renderer.Init(hWnd, std::make_shared<Camera>()))
           return EXIT_FAILURE;
 
      // Run the message loop
@@ -109,6 +110,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
                if (WM_QUIT == msg.message)
                     exit = true;
           }
+          renderer.Update();
           renderer.Render();
      }
 

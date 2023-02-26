@@ -1,9 +1,12 @@
 #pragma once
 
+#include "camera.h"
+
 #include <d3d11.h>
 #include <dxgi.h>
 #include <windows.h>
 #include <array>
+#include <memory>
 
 class Renderer
 {
@@ -15,7 +18,8 @@ public:
      ~Renderer();
      void CleanAll();
 
-     bool Init(const HWND hWnd);
+     bool Init(const HWND hWnd, std::shared_ptr<Camera> pCamera);
+     bool Update();
      bool Render();
      bool Resize(const unsigned width, const unsigned height);
 
@@ -23,6 +27,9 @@ public:
      static constexpr const unsigned defaultHeight = 720;
 
 private:
+     static constexpr const float near_ = 0.1f;
+     static constexpr const float far_ = 100.0f;
+
      Renderer();
 
      ID3D11Device *pDevice_;
@@ -35,7 +42,14 @@ private:
      ID3D11InputLayout *pInputLayout_;
      ID3D11Buffer *pVertexBuffer_;
      ID3D11Buffer *pIndexBuffer_;
+     ID3D11Buffer *pWorldBuffer_;
+     ID3D11Buffer *pSceneBuffer_;
+     ID3D11RasterizerState *pRasterizerState_;
+
+     std::shared_ptr<Camera> pCamera_;
 
      unsigned width_;
      unsigned height_;
+
+     std::size_t start_;
 };

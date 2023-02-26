@@ -19,6 +19,9 @@
     <Filter Include="Файлы ресурсов\Shaders">
       <UniqueIdentifier>{8f0956ae-869d-418f-ad8e-2473be27f30b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\camera">
+      <UniqueIdentifier>{e6603812-e376-4503-900d-18040f21c747}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,10 +30,16 @@
     <ClCompile Include="renderer.cpp">
       <Filter>Исходные файлы\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Исходные файлы\camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer.h">
       <Filter>Исходные файлы\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Исходные файлы\camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
