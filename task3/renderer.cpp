@@ -70,6 +70,39 @@ namespace
           return S_OK;
      }
 
+     static const std::array<Vertex, 8> cubeVertices =
+     {
+          Vertex{-1.0f, 1.0f, -1.0f, RGB(0, 0, 0)},
+          Vertex{1.0f, 1.0f, -1.0f, RGB(0, 0, 255)},
+          Vertex{1.0f, 1.0f, 1.0f, RGB(0, 255, 0)},
+          Vertex{-1.0f, 1.0f, 1.0f, RGB(0, 255, 255)},
+          Vertex{-1.0f, -1.0f, -1.0f, RGB(255, 0, 0)},
+          Vertex{1.0f, -1.0f, -1.0f, RGB(255, 0, 255)},
+          Vertex{1.0f, -1.0f, 1.0f, RGB(255, 255, 0)},
+          Vertex{-1.0f, -1.0f, 1.0f, RGB(255, 255, 255)}
+     };
+
+     static const std::array<USHORT, 36> cubeIndices =
+     {
+          3, 1, 0,
+          2, 1, 3,
+
+          0, 5, 4,
+          1, 5, 0,
+
+          3, 4, 7,
+          0, 4, 3,
+
+          1, 6, 5,
+          2, 6, 1,
+
+          2, 7, 6,
+          3, 7, 2,
+
+          6, 4, 5,
+          7, 4, 6,
+     };
+
 }
 
 Renderer &Renderer::GetInstance() {
@@ -268,16 +301,10 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      if (FAILED(result))
           return false;
 
-     // Create vertex buffer for triangle
-     static const Vertex triangleVertices[] =
-     {
-          {-0.5f, -0.5f, 0.0f, RGB(255, 0, 0)},
-          {0.5f, -0.5f, 0.0f, RGB(0, 255, 0)},
-          {0.0f, 0.5f, 0.0f, RGB(0, 0, 255)}
-     };
+     // Create vertex buffer
      D3D11_BUFFER_DESC desc;
      ZeroMemory(&desc, sizeof(desc));
-     desc.ByteWidth = sizeof(triangleVertices);
+     desc.ByteWidth = static_cast<UINT>(sizeof(Vertex) * cubeVertices.size());
      desc.Usage = D3D11_USAGE_DEFAULT;
      desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
      desc.CPUAccessFlags = 0;
@@ -286,8 +313,8 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
 
      D3D11_SUBRESOURCE_DATA data;
      ZeroMemory(&data, sizeof(data));
-     data.pSysMem = &triangleVertices;
-     data.SysMemPitch = sizeof(triangleVertices);
+     data.pSysMem = cubeVertices.data();
+     data.SysMemPitch = static_cast<UINT>(sizeof(Vertex) * cubeVertices.size());
      data.SysMemSlicePitch = 0;
 
      result = pDevice_->CreateBuffer(&desc, &data, &pVertexBuffer_);
@@ -297,11 +324,9 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      if (FAILED(result))
           return false;
 
-     // Create index buffer for triangle
-     static const USHORT triangleIndices[] = {0, 2, 1};
-
+     // Create index buffer
      ZeroMemory(&desc, sizeof(desc));
-     desc.ByteWidth = sizeof(triangleIndices);
+     desc.ByteWidth = static_cast<UINT>(sizeof(USHORT) * cubeIndices.size());
      desc.Usage = D3D11_USAGE_DEFAULT;
      desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
      desc.CPUAccessFlags = 0;
@@ -309,8 +334,8 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      desc.StructureByteStride = 0;
 
      ZeroMemory(&data, sizeof(data));
-     data.pSysMem = &triangleIndices;
-     data.SysMemPitch = sizeof(triangleIndices);
+     data.pSysMem = cubeIndices.data();
+     data.SysMemPitch = static_cast<UINT>(sizeof(USHORT) * cubeIndices.size());;
      data.SysMemSlicePitch = 0;
 
      result = pDevice_->CreateBuffer(&desc, &data, &pIndexBuffer_);
@@ -355,7 +380,7 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      ZeroMemory(&rasterizeDesc, sizeof(rasterizeDesc));
      rasterizeDesc.AntialiasedLineEnable = false;
      rasterizeDesc.FillMode = D3D11_FILL_SOLID;
-     rasterizeDesc.CullMode = D3D11_CULL_NONE;
+     rasterizeDesc.CullMode = D3D11_CULL_BACK;
      rasterizeDesc.DepthBias = 0;
      rasterizeDesc.DepthBiasClamp = 0.0f;
      rasterizeDesc.FrontCounterClockwise = false;
@@ -380,7 +405,7 @@ bool Renderer::Update()
      double angle = static_cast<double>(countSec - start_) / 1000;
      WorldBuffer worldBuffer;
      worldBuffer.worldMatrix =
-          DirectX::XMMatrixRotationY(0);// -static_cast<float>(angle));
+          DirectX::XMMatrixRotationY(-static_cast<float>(angle));
      pDeviceContext_->UpdateSubresource(pWorldBuffer_, 0, NULL, &worldBuffer, 0, 0);
 
      pInput_->Update();
@@ -433,7 +458,7 @@ bool Renderer::Render()
      pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer_);
      pDeviceContext_->VSSetConstantBuffers(1, 1, &pSceneBuffer_);
      pDeviceContext_->PSSetShader(pPixelShader_, NULL, 0);
-     pDeviceContext_->DrawIndexed(3, 0, 0);
+     pDeviceContext_->DrawIndexed(static_cast<UINT>(cubeIndices.size()), 0, 0);
 
      HRESULT result = pSwapChain_->Present(0, 0);
      if (!SUCCEEDED(result))

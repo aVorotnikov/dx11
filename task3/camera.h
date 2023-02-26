@@ -6,7 +6,7 @@ class Camera
 {
 public:
      Camera(
-          const DirectX::XMFLOAT3& pov = DirectX::XMFLOAT3(2, 2, 0),
+          const DirectX::XMFLOAT3& pov = DirectX::XMFLOAT3(3, 3, 0),
           const DirectX::XMFLOAT3& poi = DirectX::XMFLOAT3(0, 0, 0),
           const DirectX::XMFLOAT3& nearUp = DirectX::XMFLOAT3(0, 1, 0));
      void Update(const DirectX::XMFLOAT3& change);
