@@ -92,7 +92,7 @@ bool Input::Update()
 
 DirectX::XMFLOAT3 Input::GetMouseState()
 {
-     if (mouseState_.rgbButtons[0] || mouseState_.rgbButtons[1] || mouseState_.rgbButtons[2] && 0x80)
+     if (mouseState_.rgbButtons[0] | mouseState_.rgbButtons[1] | mouseState_.rgbButtons[2] & 0x80)
           return DirectX::XMFLOAT3(
                static_cast<float>(mouseState_.lX),
                static_cast<float>(mouseState_.lY),

@@ -90,7 +90,8 @@ Renderer::Renderer() :
      pWorldBuffer_(NULL),
      pSceneBuffer_(NULL),
      pRasterizerState_(NULL),
-     pCamera_(NULL),
+     pCamera_(nullptr),
+     pInput_(nullptr),
      width_(defaultWidth),
      height_(defaultHeight),
      start_(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
@@ -121,9 +122,10 @@ void Renderer::CleanAll()
      SafeRelease(pSwapChain_);
 }
 
-bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera)
+bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::shared_ptr<Input> pInput)
 {
      pCamera_ = pCamera;
+     pInput_ = pInput;
 
      // Create a DirectX graphics interface factory.​
      IDXGIFactory *pFactory = nullptr;
@@ -378,8 +380,11 @@ bool Renderer::Update()
      double angle = static_cast<double>(countSec - start_) / 1000;
      WorldBuffer worldBuffer;
      worldBuffer.worldMatrix =
-          DirectX::XMMatrixRotationY(-static_cast<float>(angle));
+          DirectX::XMMatrixRotationY(0);// -static_cast<float>(angle));
      pDeviceContext_->UpdateSubresource(pWorldBuffer_, 0, NULL, &worldBuffer, 0, 0);
+
+     pInput_->Update();
+     pCamera_->Update(pInput_->GetMouseState());
 
      SceneBuffer sceneBuffer;
      sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(

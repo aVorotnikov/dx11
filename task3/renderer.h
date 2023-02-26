@@ -1,6 +1,7 @@
 #pragma once
 
 #include "camera.h"
+#include "input.h"
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -18,7 +19,7 @@ public:
      ~Renderer();
      void CleanAll();
 
-     bool Init(const HWND hWnd, std::shared_ptr<Camera> pCamera);
+     bool Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::shared_ptr<Input> pInput);
      bool Update();
      bool Render();
      bool Resize(const unsigned width, const unsigned height);
@@ -47,6 +48,7 @@ private:
      ID3D11RasterizerState *pRasterizerState_;
 
      std::shared_ptr<Camera> pCamera_;
+     std::shared_ptr<Input> pInput_;
 
      unsigned width_;
      unsigned height_;
