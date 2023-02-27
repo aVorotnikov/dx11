@@ -21,9 +21,13 @@ Camera::Camera(const DirectX::XMFLOAT3& pov, const DirectX::XMFLOAT3& poi, const
 
 void Camera::Update(const DirectX::XMFLOAT3& change)
 {
+     static constexpr const float epsilon = 10e-5f;
+     static constexpr const float thetaSup = DirectX::XM_PIDIV2 - epsilon;
+     static constexpr const float thetaInf = -thetaSup;
+
      phi_ -= change.x / 100.0f;
      theta_ += change.y / 100.0f;
-     theta_ = std::clamp(theta_, -DirectX::XM_PIDIV2, DirectX::XM_PIDIV2);
+     theta_ = std::clamp(theta_, thetaInf, thetaSup);
      dist_ -= change.z / 1000.0f;
      dist_ = std::max(1.0f, dist_);
 
