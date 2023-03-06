@@ -2,6 +2,8 @@
 
 #include "camera.h"
 #include "input.h"
+#include "texture.h"
+#include "cube_map.h"
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -28,8 +30,11 @@ public:
      static constexpr const unsigned defaultHeight = 720;
 
 private:
+     static constexpr const WCHAR cubeTextureFileName_[] = L"images/pomogite.dds";
+
      static constexpr const float near_ = 0.1f;
      static constexpr const float far_ = 100.0f;
+     static constexpr const float fov_ = DirectX::XM_PI / 3;
 
      Renderer();
 
@@ -46,6 +51,9 @@ private:
      ID3D11Buffer *pWorldBuffer_;
      ID3D11Buffer *pSceneBuffer_;
      ID3D11RasterizerState *pRasterizerState_;
+
+     std::shared_ptr<Texture> pCubeTexture_;
+     std::shared_ptr<CubeMap> pCubeMap_;
 
      std::shared_ptr<Camera> pCamera_;
      std::shared_ptr<Input> pInput_;

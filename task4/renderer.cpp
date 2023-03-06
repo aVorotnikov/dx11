@@ -1,4 +1,5 @@
 ﻿#include "renderer.h"
+#include "utils.h"
 
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -9,17 +10,10 @@
 namespace
 {
 
-     template <class DirectXClass>
-     void SafeRelease(DirectXClass *pointer)
-     {
-          if (NULL != pointer)
-               pointer->Release();
-     }
-
      struct Vertex
      {
           float x, y, z;
-          COLORREF color;
+          float u, v;
      };
 
      struct SceneBuffer
@@ -37,70 +31,47 @@ namespace
           return pResource->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)name.length(), name.c_str());
      }
 
-     HRESULT CompileShaderFromFile(const WCHAR *szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob **ppBlobOut)
+     static const std::array<Vertex, 24> cubeVertices =
      {
+          Vertex{-0.5, -0.5, 0.5, 0, 1},
+          Vertex{0.5, -0.5, 0.5, 1, 1},
+          Vertex{0.5, -0.5, -0.5, 1, 0},
+          Vertex{-0.5, -0.5, -0.5, 0, 0},
 
-          DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#ifdef _DEBUG
-          dwShaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
+          Vertex{-0.5, 0.5, -0.5, 0, 1},
+          Vertex{0.5, 0.5, -0.5, 1, 1},
+          Vertex{0.5, 0.5, 0.5, 1, 0},
+          Vertex{-0.5, 0.5, 0.5, 0, 0},
 
-          ID3DBlob *pErrorBlob = NULL;
-          auto hr = D3DCompileFromFile(
-               szFileName,
-               NULL,
-               NULL,
-               szEntryPoint,
-               szShaderModel,
-               dwShaderFlags,
-               0,
-               ppBlobOut,
-               &pErrorBlob);
-          if (FAILED(hr))
-          {
-               if (pErrorBlob)
-               {
-                    OutputDebugStringA(reinterpret_cast<const char *>(pErrorBlob->GetBufferPointer()));
-                    pErrorBlob->Release();
-               }
-               return hr;
-          }
+          Vertex{0.5, -0.5, -0.5, 0, 1},
+          Vertex{0.5, -0.5, 0.5, 1, 1},
+          Vertex{0.5, 0.5, 0.5, 1, 0},
+          Vertex{0.5, 0.5, -0.5, 0, 0},
 
-          SafeRelease(pErrorBlob);
-          return S_OK;
-     }
+          Vertex{-0.5, -0.5, 0.5, 0, 1},
+          Vertex{-0.5, -0.5, -0.5, 1, 1},
+          Vertex{-0.5, 0.5, -0.5, 1, 0},
+          Vertex{-0.5, 0.5, 0.5, 0, 0},
 
-     static const std::array<Vertex, 8> cubeVertices =
-     {
-          Vertex{-1.0f, 1.0f, -1.0f, RGB(0, 0, 0)},
-          Vertex{1.0f, 1.0f, -1.0f, RGB(0, 0, 255)},
-          Vertex{1.0f, 1.0f, 1.0f, RGB(0, 255, 0)},
-          Vertex{-1.0f, 1.0f, 1.0f, RGB(0, 255, 255)},
-          Vertex{-1.0f, -1.0f, -1.0f, RGB(255, 0, 0)},
-          Vertex{1.0f, -1.0f, -1.0f, RGB(255, 0, 255)},
-          Vertex{1.0f, -1.0f, 1.0f, RGB(255, 255, 0)},
-          Vertex{-1.0f, -1.0f, 1.0f, RGB(255, 255, 255)}
+          Vertex{0.5, -0.5, 0.5, 0, 1},
+          Vertex{-0.5, -0.5, 0.5, 1, 1},
+          Vertex{-0.5, 0.5, 0.5, 1, 0},
+          Vertex{0.5, 0.5, 0.5, 0, 0},
+
+          Vertex{-0.5, -0.5, -0.5, 0, 1},
+          Vertex{0.5, -0.5, -0.5, 1, 1},
+          Vertex{0.5, 0.5, -0.5, 1, 0},
+          Vertex{-0.5, 0.5, -0.5, 0, 0}
      };
 
      static const std::array<USHORT, 36> cubeIndices =
      {
-          3, 1, 0,
-          2, 1, 3,
-
-          0, 5, 4,
-          1, 5, 0,
-
-          3, 4, 7,
-          0, 4, 3,
-
-          1, 6, 5,
-          2, 6, 1,
-
-          2, 7, 6,
-          3, 7, 2,
-
-          6, 4, 5,
-          7, 4, 6,
+          0, 2, 1, 0, 3, 2,
+          4, 6, 5, 4, 7, 6,
+          8, 10, 9, 8, 11, 10,
+          12, 14, 13, 12, 15, 14,
+          16, 18, 17, 16, 19, 18,
+          20, 22, 21, 20, 23, 22
      };
 
 }
@@ -123,6 +94,8 @@ Renderer::Renderer() :
      pWorldBuffer_(NULL),
      pSceneBuffer_(NULL),
      pRasterizerState_(NULL),
+     pCubeTexture_(nullptr),
+     pCubeMap_(nullptr),
      pCamera_(nullptr),
      pInput_(nullptr),
      width_(defaultWidth),
@@ -241,7 +214,7 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
 
      // Compile the vertex shader
      ID3DBlob *pVertexShaderBlob = NULL;
-     result = CompileShaderFromFile(L"vertex.hlsl", "main", "vs_5_0", &pVertexShaderBlob);
+     result = CompileShaderFromFile(L"cube_vertex.hlsl", "main", "vs_5_0", &pVertexShaderBlob);
      if (FAILED(result))
      {
           MessageBox(NULL, L"Failed to compile vertex shader", L"Error", MB_OK);
@@ -264,7 +237,7 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      D3D11_INPUT_ELEMENT_DESC layout[] =
      {
           {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-          {"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+          {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
      };
      UINT numElements = ARRAYSIZE(layout);
 
@@ -284,7 +257,7 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
 
      // Compile the pixel shader
      ID3DBlob *pPixelShaderBlob = NULL;
-     result = CompileShaderFromFile(L"pixel.hlsl", "main", "ps_5_0", &pPixelShaderBlob);
+     result = CompileShaderFromFile(L"cube_pixel.hlsl", "main", "ps_5_0", &pPixelShaderBlob);
      if (FAILED(result))
      {
           MessageBox(NULL, L"Failed to compile pixel shader", L"Error", MB_OK);
@@ -396,6 +369,16 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      if (FAILED(result))
           return false;
 
+     try
+     {
+          pCubeTexture_ = std::make_shared<Texture>(pDevice_, cubeTextureFileName_);
+          pCubeMap_ = std::make_shared<CubeMap>(pDevice_, pDeviceContext_, width_, height_, fov_, near_);
+     }
+     catch (...)
+     {
+          return false;
+     }
+
      return true;
 }
 
@@ -412,10 +395,12 @@ bool Renderer::Update()
      pCamera_->Update(pInput_->GetMouseState());
 
      SceneBuffer sceneBuffer;
-     sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(
-          pCamera_->GetView(),
-          DirectX::XMMatrixPerspectiveFovLH(DirectX::XM_PI / 3, width_ / static_cast<float>(height_), near_, far_));
+     auto view = pCamera_->GetView();
+     auto proj = DirectX::XMMatrixPerspectiveFovLH(fov_, width_ / static_cast<float>(height_), near_, far_);
+     sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(view, proj);
      pDeviceContext_->UpdateSubresource(pSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
+
+     pCubeMap_->Update(view, proj, pCamera_->GetPov());
 
      return true;
 }
@@ -445,11 +430,19 @@ bool Renderer::Render()
      rect.bottom = height_;
      pDeviceContext_->RSSetScissorRects(1, &rect);
 
+     pCubeMap_->Render();
+
      pDeviceContext_->RSSetState(pRasterizerState_);
+
+     ID3D11SamplerState *samplers[] = {pCubeTexture_->GetSampler()};
+     pDeviceContext_->PSSetSamplers(0, 1, samplers);
+
+     ID3D11ShaderResourceView *resources[] = {pCubeTexture_->GetTexture()};
+     pDeviceContext_->PSSetShaderResources(0, 1, resources);
 
      pDeviceContext_->IASetIndexBuffer(pIndexBuffer_, DXGI_FORMAT_R16_UINT, 0);
      ID3D11Buffer *vertexBuffers[] = {pVertexBuffer_};
-     UINT strides[] = {16};
+     UINT strides[] = {20};
      UINT offsets[] = {0};
      pDeviceContext_->IASetVertexBuffers(0, 1, vertexBuffers, strides, offsets);
      pDeviceContext_->IASetInputLayout(pInputLayout_);
@@ -493,6 +486,8 @@ bool Renderer::Resize(const unsigned width, const unsigned height)
 
      width_ = width;
      height_ = height;
+
+     pCubeMap_->Resize(width, height);
 
      D3D11_VIEWPORT vp;
      vp.Width = (FLOAT)width;

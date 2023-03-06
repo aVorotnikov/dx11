@@ -45,3 +45,8 @@ DirectX::XMMATRIX Camera::GetView()
           DirectX::XMVectorSet(nearUp_.x, nearUp_.y, nearUp_.z, 0.0f)
      );
 }
+
+DirectX::XMFLOAT3 Camera::GetPov()
+{
+     return pov_;
+}

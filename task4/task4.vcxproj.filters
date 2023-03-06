@@ -25,6 +25,18 @@
     <Filter Include="Исходные файлы\input">
       <UniqueIdentifier>{568be6af-3729-43ac-9322-65c6fc044258}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\renderer\texture">
+      <UniqueIdentifier>{eae08716-e3f9-42bf-8177-0fad5b8ccb33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\texture\dds_uploader">
+      <UniqueIdentifier>{5017091f-73fe-4087-8c99-0785916aa5f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\utils">
+      <UniqueIdentifier>{64aa6cd8-7f97-49cb-8b8a-d16e4b0320af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\cube_map">
+      <UniqueIdentifier>{f81aec45-6d80-4389-bc83-9405b720c868}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -39,6 +51,18 @@
     <ClCompile Include="input.cpp">
       <Filter>Исходные файлы\input</Filter>
     </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>Исходные файлы\renderer\texture\dds_uploader</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="cube_map.cpp">
+      <Filter>Исходные файлы\renderer\cube_map</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Исходные файлы\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer.h">
@@ -50,12 +74,30 @@
     <ClInclude Include="input.h">
       <Filter>Исходные файлы\input</Filter>
     </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>Исходные файлы\renderer\texture\dds_uploader</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Исходные файлы\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="cube_map.h">
+      <Filter>Исходные файлы\renderer\cube_map</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="vertex.hlsl">
+    <FxCompile Include="cube_vertex.hlsl">
       <Filter>Файлы ресурсов\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="pixel.hlsl">
+    <FxCompile Include="cube_pixel.hlsl">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="cube_map_vertex.hlsl">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="cube_map_pixel.hlsl">
       <Filter>Файлы ресурсов\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

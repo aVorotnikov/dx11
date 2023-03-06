@@ -11,6 +11,7 @@ public:
           const DirectX::XMFLOAT3& nearUp = DirectX::XMFLOAT3(0, 1, 0));
      void Update(const DirectX::XMFLOAT3& change);
      DirectX::XMMATRIX GetView();
+     DirectX::XMFLOAT3 GetPov();
 
 private:
      DirectX::XMFLOAT3 pov_;
