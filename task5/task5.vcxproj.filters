@@ -100,5 +100,11 @@
     <FxCompile Include="cube_map_pixel.hlsl">
       <Filter>Файлы ресурсов\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="color_pixel.hlsl">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="color_vertex.hlsl">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

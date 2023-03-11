@@ -42,6 +42,8 @@ private:
      ID3D11DeviceContext *pDeviceContext_;
      IDXGISwapChain *pSwapChain_;
      ID3D11RenderTargetView *pBackBufferRTV_;
+     ID3D11Texture2D *pDepthBuffer_;
+     ID3D11DepthStencilView *pDepthBufferDSV_;
 
      ID3D11VertexShader *pVertexShader_;
      ID3D11PixelShader *pPixelShader_;
@@ -52,6 +54,19 @@ private:
      ID3D11Buffer *pWorldBuffer1_;
      ID3D11Buffer *pSceneBuffer_;
      ID3D11RasterizerState *pRasterizerState_;
+     ID3D11DepthStencilState *pDepthState_;
+
+     ID3D11VertexShader *pTransparentVertexShader_;
+     ID3D11PixelShader *pTransparentPixelShader_;
+     ID3D11InputLayout *pTransparentInputLayout_;
+     ID3D11Buffer *pTransparentVertexBuffer_;
+     ID3D11Buffer *pTransparentIndexBuffer_;
+     ID3D11Buffer *pTransparentWorldBuffer_;
+     ID3D11Buffer *pTransparentWorldBuffer1_;
+     ID3D11Buffer *pTransparentSceneBuffer_;
+     ID3D11RasterizerState *pTransparentRasterizerState_;
+     ID3D11DepthStencilState *pTransparentDepthState_;
+     ID3D11BlendState *pTransparentBlendState_;
 
      std::shared_ptr<Texture> pCubeTexture_;
      std::shared_ptr<CubeMap> pCubeMap_;
