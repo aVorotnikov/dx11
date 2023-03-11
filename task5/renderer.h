@@ -30,7 +30,7 @@ public:
      static constexpr const unsigned defaultHeight = 720;
 
 private:
-     static constexpr const WCHAR cubeTextureFileName_[] = L"images/pomogite.dds";
+     static constexpr const WCHAR cubeTextureFileName_[] = L"images/rainbow.dds";
 
      static constexpr const float near_ = 0.1f;
      static constexpr const float far_ = 100.0f;
@@ -49,6 +49,7 @@ private:
      ID3D11Buffer *pVertexBuffer_;
      ID3D11Buffer *pIndexBuffer_;
      ID3D11Buffer *pWorldBuffer_;
+     ID3D11Buffer *pWorldBuffer1_;
      ID3D11Buffer *pSceneBuffer_;
      ID3D11RasterizerState *pRasterizerState_;
 

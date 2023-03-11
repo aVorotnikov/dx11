@@ -92,6 +92,7 @@ Renderer::Renderer() :
      pVertexBuffer_(NULL),
      pIndexBuffer_(NULL),
      pWorldBuffer_(NULL),
+     pWorldBuffer1_(NULL),
      pSceneBuffer_(NULL),
      pRasterizerState_(NULL),
      pCubeTexture_(nullptr),
@@ -116,6 +117,7 @@ void Renderer::CleanAll()
 
      SafeRelease(pRasterizerState_);
      SafeRelease(pSceneBuffer_);
+     SafeRelease(pWorldBuffer1_);
      SafeRelease(pWorldBuffer_);
      SafeRelease(pIndexBuffer_);
      SafeRelease(pVertexBuffer_);
@@ -334,6 +336,13 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      if (FAILED(result))
           return false;
 
+     result = pDevice_->CreateBuffer(&desc, NULL, &pWorldBuffer1_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pWorldBuffer1_, "WorldBuffer1");
+     if (FAILED(result))
+          return false;
+
      ZeroMemory(&desc, sizeof(desc));
      desc.ByteWidth = sizeof(SceneBuffer);
      desc.Usage = D3D11_USAGE_DEFAULT;
@@ -387,9 +396,15 @@ bool Renderer::Update()
      std::size_t countSec = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
      double angle = static_cast<double>(countSec - start_) / 1000;
      WorldBuffer worldBuffer;
-     worldBuffer.worldMatrix =
-          DirectX::XMMatrixRotationY(-static_cast<float>(angle));
+     worldBuffer.worldMatrix = DirectX::XMMatrixMultiply(
+          DirectX::XMMatrixRotationY(-static_cast<float>(angle)),
+          DirectX::XMMatrixTranslation(0.0f, 0.0f, -1.5f));
      pDeviceContext_->UpdateSubresource(pWorldBuffer_, 0, NULL, &worldBuffer, 0, 0);
+
+     worldBuffer.worldMatrix = DirectX::XMMatrixMultiply(
+          DirectX::XMMatrixRotationX(-static_cast<float>(angle)),
+          DirectX::XMMatrixTranslation(0.0f, 0.0f, 1.5f));
+     pDeviceContext_->UpdateSubresource(pWorldBuffer1_, 0, NULL, &worldBuffer, 0, 0);
 
      pInput_->Update();
      pCamera_->Update(pInput_->GetMouseState());
@@ -430,7 +445,7 @@ bool Renderer::Render()
      rect.bottom = height_;
      pDeviceContext_->RSSetScissorRects(1, &rect);
 
-     pCubeMap_->Render();
+     // pCubeMap_->Render();
 
      pDeviceContext_->RSSetState(pRasterizerState_);
 
@@ -451,6 +466,9 @@ bool Renderer::Render()
      pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer_);
      pDeviceContext_->VSSetConstantBuffers(1, 1, &pSceneBuffer_);
      pDeviceContext_->PSSetShader(pPixelShader_, NULL, 0);
+     pDeviceContext_->DrawIndexed(static_cast<UINT>(cubeIndices.size()), 0, 0);
+
+     pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer1_);
      pDeviceContext_->DrawIndexed(static_cast<UINT>(cubeIndices.size()), 0, 0);
 
      HRESULT result = pSwapChain_->Present(0, 0);

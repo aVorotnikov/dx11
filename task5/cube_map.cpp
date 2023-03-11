@@ -261,7 +261,7 @@ void CubeMap::Resize(const unsigned width, const unsigned height)
 {
      float halfW = tanf(fov_ / 2) * near_;
      float halfH = static_cast<float>(height / width) * halfW;
-     radius_ = sqrtf(near_ * near_ + halfH * halfH + halfW * halfW) * 10.0f;
+     radius_ = sqrtf(near_ * near_ + halfH * halfH + halfW * halfW) * 3.0f;
 }
 
 void CubeMap::Render()
