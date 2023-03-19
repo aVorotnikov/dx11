@@ -12,8 +12,10 @@ namespace
 
      struct Vertex
      {
-          float x, y, z;
-          float u, v;
+          DirectX::XMFLOAT3 pos;
+          DirectX::XMFLOAT2 uv;
+          DirectX::XMFLOAT3 normal;
+          DirectX::XMFLOAT3 tangent;
      };
 
      struct VertexPos
@@ -24,11 +26,17 @@ namespace
      struct SceneBuffer
      {
           DirectX::XMMATRIX viewProjMatrix;
+          DirectX::XMFLOAT4 cameraPosition;
+          int lightCount[4];
+          DirectX::XMFLOAT4 lightPositions[maxLightNumber];
+          DirectX::XMFLOAT4 lightColors[maxLightNumber];
+          DirectX::XMFLOAT4 ambientColor;
      };
 
      struct WorldBuffer
      {
           DirectX::XMMATRIX worldMatrix;
+          DirectX::XMFLOAT4 shine;
      };
 
      struct TransparentWorldBuffer
@@ -44,35 +52,35 @@ namespace
 
      static const std::array<Vertex, 24> cubeVertices =
      {
-          Vertex{-0.5, -0.5, 0.5, 0, 1},
-          Vertex{0.5, -0.5, 0.5, 1, 1},
-          Vertex{0.5, -0.5, -0.5, 1, 0},
-          Vertex{-0.5, -0.5, -0.5, 0, 0},
+          Vertex{{-0.5, -0.5, 0.5}, {0, 1}, {0, -1, 0}, {1, 0, 0}},
+          Vertex{{0.5, -0.5, 0.5}, {1, 1}, {0, -1, 0}, {1, 0, 0}},
+          Vertex{{0.5, -0.5, -0.5}, {1, 0}, {0, -1, 0}, {1, 0, 0}},
+          Vertex{{-0.5, -0.5, -0.5}, {0, 0}, {0, -1, 0}, {1, 0, 0}},
 
-          Vertex{-0.5, 0.5, -0.5, 0, 1},
-          Vertex{0.5, 0.5, -0.5, 1, 1},
-          Vertex{0.5, 0.5, 0.5, 1, 0},
-          Vertex{-0.5, 0.5, 0.5, 0, 0},
+          Vertex{{-0.5, 0.5, -0.5}, {0, 1}, {0, 1, 0}, {1, 0, 0}},
+          Vertex{{0.5, 0.5, -0.5}, {1, 1}, {0, 1, 0}, {1, 0, 0}},
+          Vertex{{0.5, 0.5, 0.5}, {1, 0}, {0, 1, 0}, {1, 0, 0}},
+          Vertex{{-0.5, 0.5, 0.5}, {0, 0}, {0, 1, 0}, {1, 0, 0}},
 
-          Vertex{0.5, -0.5, -0.5, 0, 1},
-          Vertex{0.5, -0.5, 0.5, 1, 1},
-          Vertex{0.5, 0.5, 0.5, 1, 0},
-          Vertex{0.5, 0.5, -0.5, 0, 0},
+          Vertex{{0.5, -0.5, -0.5}, {0, 1}, {1, 0, 0}, {0, 0, 1}},
+          Vertex{{0.5, -0.5, 0.5}, {1, 1}, {1, 0, 0}, {0, 0, 1}},
+          Vertex{{0.5, 0.5, 0.5}, {1, 0}, {1, 0, 0}, {0, 0, 1}},
+          Vertex{{0.5, 0.5, -0.5}, {0, 0}, {1, 0, 0}, {0, 0, 1}},
 
-          Vertex{-0.5, -0.5, 0.5, 0, 1},
-          Vertex{-0.5, -0.5, -0.5, 1, 1},
-          Vertex{-0.5, 0.5, -0.5, 1, 0},
-          Vertex{-0.5, 0.5, 0.5, 0, 0},
+          Vertex{{-0.5, -0.5, 0.5}, {0, 1}, {-1, 0, 0}, {0, 0, -1}},
+          Vertex{{-0.5, -0.5, -0.5}, {1, 1}, {-1, 0, 0}, {0, 0, -1}},
+          Vertex{{-0.5, 0.5, -0.5}, {1, 0}, {-1, 0, 0}, {0, 0, -1}},
+          Vertex{{-0.5, 0.5, 0.5}, {0, 0}, {-1, 0, 0}, {0, 0, -1}},
 
-          Vertex{0.5, -0.5, 0.5, 0, 1},
-          Vertex{-0.5, -0.5, 0.5, 1, 1},
-          Vertex{-0.5, 0.5, 0.5, 1, 0},
-          Vertex{0.5, 0.5, 0.5, 0, 0},
+          Vertex{{0.5, -0.5, 0.5}, {0, 1}, {0, 0, 1}, {-1, 0, 0}},
+          Vertex{{-0.5, -0.5, 0.5}, {1, 1}, {0, 0, 1}, {-1, 0, 0}},
+          Vertex{{-0.5, 0.5, 0.5}, {1, 0}, {0, 0, 1}, {-1, 0, 0}},
+          Vertex{{0.5, 0.5, 0.5}, {0, 0}, {0, 0, 1}, {-1, 0, 0}},
 
-          Vertex{-0.5, -0.5, -0.5, 0, 1},
-          Vertex{0.5, -0.5, -0.5, 1, 1},
-          Vertex{0.5, 0.5, -0.5, 1, 0},
-          Vertex{-0.5, 0.5, -0.5, 0, 0}
+          Vertex{{-0.5, -0.5, -0.5}, {0, 1}, {0, 0, -1}, {1, 0, 0}},
+          Vertex{{0.5, -0.5, -0.5}, {1, 1}, {0, 0, -1}, {1, 0, 0}},
+          Vertex{{0.5, 0.5, -0.5}, {1, 0}, {0, 0, -1}, {1, 0, 0}},
+          Vertex{{-0.5, 0.5, -0.5}, {0, 0}, {0, 0, -1}, {1, 0, 0}}
      };
 
      static const std::array<USHORT, 36> cubeIndices =
@@ -134,6 +142,7 @@ Renderer::Renderer() :
      pTransparentDepthState_(NULL),
      pTransparentBlendState_(NULL),
      pCubeTexture_(nullptr),
+     pCubeNormalMap_(nullptr),
      pCubeMap_(nullptr),
      pCamera_(nullptr),
      pInput_(nullptr),
@@ -314,7 +323,9 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      D3D11_INPUT_ELEMENT_DESC layout[] =
      {
           {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-          {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+          {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+          {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0},
+          {"TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0},
      };
      UINT numElements = ARRAYSIZE(layout);
 
@@ -466,7 +477,43 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      try
      {
           pCubeTexture_ = std::make_shared<Texture>(pDevice_, cubeTextureFileName_);
+          pCubeNormalMap_ = std::make_shared<Texture>(pDevice_, cubeNormalMapFileName_);
           pCubeMap_ = std::make_shared<CubeMap>(pDevice_, pDeviceContext_, width_, height_, fov_, near_);
+          pLights_ = std::make_shared<Lights>();
+
+          pLights_->Add(
+               {
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(0.0f, 1.5f, 3.0f * std::sin(milliseconds / 1000.0f), 0.0f);
+                    },
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(1.0f, 1.0f, std::sin(milliseconds / 500.0f), 1.0f);
+                    }
+               });
+          pLights_->Add(
+               {
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(0.0f, -1.5f, -3.0f * std::sin(milliseconds / 1000.0f), 0.0f);
+                    },
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(1.0f, std::sin(milliseconds / 1000.0f), 1.0f, 1.0f);
+                    }
+               });
+          pLights_->Add(
+               {
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(-1.5f, 0.0f, -3.0f, 0.0f);
+                    },
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+                    }
+               });
      }
      catch (...)
      {
@@ -670,12 +717,12 @@ bool Renderer::Update()
      pInput_->Update();
      pCamera_->Update(pInput_->GetMouseState());
 
-     std::size_t countSec = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-     double angle = static_cast<double>(countSec - start_) / 1000;
+     std::size_t countSec =
+          std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - start_;
+     double angle = static_cast<double>(countSec) / 1000;
      WorldBuffer worldBuffer;
-     worldBuffer.worldMatrix = DirectX::XMMatrixMultiply(
-          DirectX::XMMatrixRotationY(-static_cast<float>(angle)),
-          DirectX::XMMatrixTranslation(0.0f, 0.0f, -1.0f));
+     worldBuffer.worldMatrix = DirectX::XMMatrixTranslation(0.0f, 0.0f, -1.0f);
+     worldBuffer.shine.x = 1000.0f;
      pDeviceContext_->UpdateSubresource(pWorldBuffer_, 0, NULL, &worldBuffer, 0, 0);
 
      worldBuffer.worldMatrix = DirectX::XMMatrixMultiply(
@@ -693,13 +740,25 @@ bool Renderer::Update()
      pDeviceContext_->UpdateSubresource(pTransparentWorldBuffer1_, 0, NULL, &transparentWorldBuffer, 0, 0);
 
      SceneBuffer sceneBuffer;
-     auto view = pCamera_->GetView();
-     auto proj = DirectX::XMMatrixPerspectiveFovLH(fov_, width_ / static_cast<float>(height_), far_, near_);
+     const auto view = pCamera_->GetView();
+     const auto proj = DirectX::XMMatrixPerspectiveFovLH(fov_, width_ / static_cast<float>(height_), far_, near_);
      sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(view, proj);
+     const auto pov = pCamera_->GetPov();
+     sceneBuffer.cameraPosition.x = pov.x;
+     sceneBuffer.cameraPosition.y = pov.y;
+     sceneBuffer.cameraPosition.z = pov.z;
+     sceneBuffer.lightCount[0] = static_cast<int>(pLights_->GetNumber());
+     sceneBuffer.lightCount[1] = 1;
+     sceneBuffer.lightCount[2] = 0;
+     auto lightPositions = pLights_->GetPositions(countSec);
+     std::copy(lightPositions.begin(), lightPositions.end(), sceneBuffer.lightPositions);
+     auto lightColors = pLights_->GetColors(countSec);
+     std::copy(lightColors.begin(), lightColors.end(), sceneBuffer.lightColors);
+     sceneBuffer.ambientColor = ambientColor_;
      pDeviceContext_->UpdateSubresource(pSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
      pDeviceContext_->UpdateSubresource(pTransparentSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
 
-     pCubeMap_->Update(view, proj, pCamera_->GetPov());
+     pCubeMap_->Update(view, proj, pov);
 
      return true;
 }
@@ -733,15 +792,15 @@ bool Renderer::Render()
      pDeviceContext_->RSSetState(pRasterizerState_);
      pDeviceContext_->OMSetDepthStencilState(pDepthState_, 0);
 
-     ID3D11SamplerState *samplers[] = {pCubeTexture_->GetSampler()};
-     pDeviceContext_->PSSetSamplers(0, 1, samplers);
+     ID3D11SamplerState *samplers[] = {pCubeTexture_->GetSampler(), pCubeNormalMap_->GetSampler()};
+     pDeviceContext_->PSSetSamplers(0, 2, samplers);
 
-     ID3D11ShaderResourceView *resources[] = {pCubeTexture_->GetTexture()};
-     pDeviceContext_->PSSetShaderResources(0, 1, resources);
+     ID3D11ShaderResourceView *resources[] = {pCubeTexture_->GetTexture(), pCubeNormalMap_->GetTexture()};
+     pDeviceContext_->PSSetShaderResources(0, 2, resources);
 
      pDeviceContext_->IASetIndexBuffer(pIndexBuffer_, DXGI_FORMAT_R16_UINT, 0);
      ID3D11Buffer *vertexBuffers1[] = {pVertexBuffer_};
-     UINT strides1[] = {20};
+     UINT strides1[] = {sizeof(Vertex)};
      UINT offsets1[] = {0};
      pDeviceContext_->IASetVertexBuffers(0, 1, vertexBuffers1, strides1, offsets1);
      pDeviceContext_->IASetInputLayout(pInputLayout_);
@@ -749,10 +808,13 @@ bool Renderer::Render()
      pDeviceContext_->VSSetShader(pVertexShader_, NULL, 0);
      pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer_);
      pDeviceContext_->VSSetConstantBuffers(1, 1, &pSceneBuffer_);
+     pDeviceContext_->PSSetConstantBuffers(0, 1, &pWorldBuffer_);
+     pDeviceContext_->PSSetConstantBuffers(1, 1, &pSceneBuffer_);
      pDeviceContext_->PSSetShader(pPixelShader_, NULL, 0);
      pDeviceContext_->DrawIndexed(static_cast<UINT>(cubeIndices.size()), 0, 0);
 
      pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer1_);
+     pDeviceContext_->PSSetConstantBuffers(0, 1, &pWorldBuffer1_);
      pDeviceContext_->DrawIndexed(static_cast<UINT>(cubeIndices.size()), 0, 0);
 
      pCubeMap_->Render();

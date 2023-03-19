@@ -37,6 +37,12 @@
     <Filter Include="Исходные файлы\renderer\cube_map">
       <UniqueIdentifier>{f81aec45-6d80-4389-bc83-9405b720c868}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\renderer\lights">
+      <UniqueIdentifier>{7ee96660-f1cd-4a58-b98e-e8c1bc186ab7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\utils\D3DInclude">
+      <UniqueIdentifier>{47134639-0fb7-48ed-8dd5-38a73c75fbb0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -63,6 +69,12 @@
     <ClCompile Include="utils.cpp">
       <Filter>Исходные файлы\utils</Filter>
     </ClCompile>
+    <ClCompile Include="lights.cpp">
+      <Filter>Исходные файлы\renderer\lights</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DInclude.cpp">
+      <Filter>Исходные файлы\utils\D3DInclude</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer.h">
@@ -86,6 +98,12 @@
     <ClInclude Include="cube_map.h">
       <Filter>Исходные файлы\renderer\cube_map</Filter>
     </ClInclude>
+    <ClInclude Include="lights.h">
+      <Filter>Исходные файлы\renderer\lights</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DInclude.h">
+      <Filter>Исходные файлы\utils\D3DInclude</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="cube_vertex.hlsl">
@@ -106,5 +124,13 @@
     <FxCompile Include="color_vertex.hlsl">
       <Filter>Файлы ресурсов\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="scene_buffer.hlsli">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </None>
+    <None Include="calculate_light.hlsli">
+      <Filter>Файлы ресурсов\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

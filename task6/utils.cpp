@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "D3DInclude.h"
 #include <d3dcompiler.h>
 
 HRESULT CompileShaderFromFile(const WCHAR *szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob **ppBlobOut)
@@ -8,11 +9,12 @@ HRESULT CompileShaderFromFile(const WCHAR *szFileName, LPCSTR szEntryPoint, LPCS
      dwShaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
+     D3DInclude includeObject;
      ID3DBlob *pErrorBlob = NULL;
      auto hr = D3DCompileFromFile(
           szFileName,
           NULL,
-          NULL,
+          &includeObject,
           szEntryPoint,
           szShaderModel,
           dwShaderFlags,

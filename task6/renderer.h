@@ -4,9 +4,11 @@
 #include "input.h"
 #include "texture.h"
 #include "cube_map.h"
+#include "lights.h"
 
 #include <d3d11.h>
 #include <dxgi.h>
+#include <directxmath.h>
 #include <windows.h>
 #include <array>
 #include <memory>
@@ -30,11 +32,13 @@ public:
      static constexpr const unsigned defaultHeight = 720;
 
 private:
-     static constexpr const WCHAR cubeTextureFileName_[] = L"images/rainbow.dds";
+     static constexpr const WCHAR cubeTextureFileName_[] = L"images/brick_diffuse.dds";
+     static constexpr const WCHAR cubeNormalMapFileName_[] = L"images/brick_normal.dds";
 
      static constexpr const float near_ = 0.1f;
      static constexpr const float far_ = 100.0f;
      static constexpr const float fov_ = DirectX::XM_PI / 3;
+     static constexpr const DirectX::XMFLOAT4 ambientColor_{0.5f, 0.5f, 0.5f, 1.0f};
 
      Renderer();
 
@@ -69,7 +73,9 @@ private:
      ID3D11BlendState *pTransparentBlendState_;
 
      std::shared_ptr<Texture> pCubeTexture_;
+     std::shared_ptr<Texture> pCubeNormalMap_;
      std::shared_ptr<CubeMap> pCubeMap_;
+     std::shared_ptr<Lights> pLights_;
 
      std::shared_ptr<Camera> pCamera_;
      std::shared_ptr<Input> pInput_;
