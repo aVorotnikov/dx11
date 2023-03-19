@@ -40,6 +40,9 @@ private:
      static constexpr const float fov_ = DirectX::XM_PI / 3;
      static constexpr const DirectX::XMFLOAT4 ambientColor_{0.5f, 0.5f, 0.5f, 1.0f};
 
+     static constexpr const bool showNormalMap_ = true;
+     static constexpr const bool showNormals_ = false;
+
      Renderer();
 
      ID3D11Device *pDevice_;

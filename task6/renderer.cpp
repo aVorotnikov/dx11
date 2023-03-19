@@ -770,8 +770,8 @@ bool Renderer::Update()
      sceneBuffer.cameraPosition.y = pov.y;
      sceneBuffer.cameraPosition.z = pov.z;
      sceneBuffer.lightCount[0] = static_cast<int>(pLights_->GetNumber());
-     sceneBuffer.lightCount[1] = 1;
-     sceneBuffer.lightCount[2] = 0;
+     sceneBuffer.lightCount[1] = showNormalMap_;
+     sceneBuffer.lightCount[2] = showNormals_;
      auto lightPositions = pLights_->GetPositions(countSec);
      std::copy(lightPositions.begin(), lightPositions.end(), sceneBuffer.lightPositions);
      auto lightColors = pLights_->GetColors(countSec);
