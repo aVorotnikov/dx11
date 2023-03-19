@@ -32,7 +32,7 @@ public:
      static constexpr const unsigned defaultHeight = 720;
 
 private:
-     static constexpr const WCHAR cubeTextureFileName_[] = L"images/brick_diffuse.dds";
+     static constexpr const WCHAR cubeTextureFileName_[] = L"images/rainbow.dds";
      static constexpr const WCHAR cubeNormalMapFileName_[] = L"images/brick_normal.dds";
 
      static constexpr const float near_ = 0.1f;
