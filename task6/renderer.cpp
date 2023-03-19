@@ -485,18 +485,18 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
                {
                     [](std::size_t milliseconds)
                     {
-                         return DirectX::XMFLOAT4(0.0f, 1.5f, 3.0f * std::sin(milliseconds / 1000.0f), 0.0f);
+                         return DirectX::XMFLOAT4(0.0f, 1.5f, 2.0f * std::sin(milliseconds / 1000.0f), 0.0f);
                     },
                     [](std::size_t milliseconds)
                     {
-                         return DirectX::XMFLOAT4(1.0f, 1.0f, std::sin(milliseconds / 500.0f), 1.0f);
+                         return DirectX::XMFLOAT4(1.0f, 1.0f, std::sin(milliseconds / 100.0f), 1.0f);
                     }
                });
           pLights_->Add(
                {
                     [](std::size_t milliseconds)
                     {
-                         return DirectX::XMFLOAT4(0.0f, -1.5f, -3.0f * std::sin(milliseconds / 1000.0f), 0.0f);
+                         return DirectX::XMFLOAT4(0.0f, -1.5f, -2.0f * std::sin(milliseconds / 300.0f), 0.0f);
                     },
                     [](std::size_t milliseconds)
                     {
@@ -507,11 +507,33 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
                {
                     [](std::size_t milliseconds)
                     {
-                         return DirectX::XMFLOAT4(-1.5f, 0.0f, -3.0f, 0.0f);
+                         return DirectX::XMFLOAT4(-1.5f, 0.0f, -2.0f, 0.0f);
                     },
                     [](std::size_t milliseconds)
                     {
                          return DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+                    }
+               });
+          pLights_->Add(
+               {
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(1.5f, 0.0f, 2.0f, 0.0f);
+                    },
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+                    }
+               });
+          pLights_->Add(
+               {
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(std::cos(milliseconds / 2000.0f), std::sin(milliseconds / 500.0f), 0.0f, 0.0f);
+                    },
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
                     }
                });
      }
@@ -832,10 +854,11 @@ bool Renderer::Render()
      pDeviceContext_->OMSetBlendState(pTransparentBlendState_, NULL, 0xFFFFFFFF);
      pDeviceContext_->OMSetDepthStencilState(pTransparentDepthState_, 0);
 
-     pDeviceContext_->VSSetConstantBuffers(0, 1, &pTransparentWorldBuffer_);
-     pDeviceContext_->PSSetConstantBuffers(0, 1, &pTransparentWorldBuffer_);
      pDeviceContext_->VSSetConstantBuffers(1, 1, &pTransparentSceneBuffer_);
      pDeviceContext_->PSSetShader(pTransparentPixelShader_, NULL, 0);
+
+     pDeviceContext_->VSSetConstantBuffers(0, 1, &pTransparentWorldBuffer_);
+     pDeviceContext_->PSSetConstantBuffers(0, 1, &pTransparentWorldBuffer_);
      pDeviceContext_->DrawIndexed(static_cast<UINT>(coloredPlaneIndices.size()), 0, 0);
 
      pDeviceContext_->VSSetConstantBuffers(0, 1, &pTransparentWorldBuffer1_);
