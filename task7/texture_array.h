@@ -2,22 +2,18 @@
 
 #include <d3d11.h>
 #include <string>
-#include "DDSTextureLoader.h"
+#include <vector>
 
-class Texture
+class TextureArray
 {
 public:
-     Texture(
-          ID3D11Device *device,
-          const std::wstring& fileName,
-          const D3D11_SAMPLER_DESC &samplerDesc = defaultSamplerDescription_);
-     Texture(
+     TextureArray(
           ID3D11Device *device,
           ID3D11DeviceContext *context,
-          const std::wstring& fileName,
+          const std::vector<std::wstring>& fileNames,
           const D3D11_SAMPLER_DESC &samplerDesc = defaultSamplerDescription_);
-     ~Texture();
-     ID3D11ShaderResourceView *GetTexture();
+     ~TextureArray();
+     ID3D11ShaderResourceView *GetTextures();
      ID3D11SamplerState *GetSampler();
 
      inline static const D3D11_SAMPLER_DESC defaultSamplerDescription_ =

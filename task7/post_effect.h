@@ -15,7 +15,7 @@ public:
           D3D11_VIEWPORT viewport);
 
 private:
-     static constexpr const bool defaultUseSobel_ = true;
+     static constexpr const bool defaultUseSobel_ = false;
      static constexpr const bool defaultUseGray_ = false;
 
      const bool useSobel_;

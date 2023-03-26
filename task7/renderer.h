@@ -3,6 +3,7 @@
 #include "camera.h"
 #include "input.h"
 #include "texture.h"
+#include "texture_array.h"
 #include "cube_map.h"
 #include "lights.h"
 #include "render_texture.h"
@@ -36,6 +37,7 @@ public:
 private:
      static constexpr const WCHAR cubeTextureFileName_[] = L"images/rainbow.dds";
      static constexpr const WCHAR cubeNormalMapFileName_[] = L"images/brick_normal.dds";
+     static constexpr const WCHAR cubeTextureFileName1_[] = L"images/pomogite.dds";
 
      static constexpr const float near_ = 0.1f;
      static constexpr const float far_ = 100.0f;
@@ -59,8 +61,8 @@ private:
      ID3D11InputLayout *pInputLayout_;
      ID3D11Buffer *pVertexBuffer_;
      ID3D11Buffer *pIndexBuffer_;
-     ID3D11Buffer *pWorldBuffer_;
-     ID3D11Buffer *pWorldBuffer1_;
+     ID3D11Buffer *pGeomBuffer_;
+     ID3D11Buffer *pLightBuffer_;
      ID3D11Buffer *pSceneBuffer_;
      ID3D11RasterizerState *pRasterizerState_;
      ID3D11DepthStencilState *pDepthState_;
@@ -72,12 +74,13 @@ private:
      ID3D11Buffer *pTransparentIndexBuffer_;
      ID3D11Buffer *pTransparentWorldBuffer_;
      ID3D11Buffer *pTransparentWorldBuffer1_;
+     ID3D11Buffer *pTransparentLightBuffer_;
      ID3D11Buffer *pTransparentSceneBuffer_;
      ID3D11RasterizerState *pTransparentRasterizerState_;
      ID3D11DepthStencilState *pTransparentDepthState_;
      ID3D11BlendState *pTransparentBlendState_;
 
-     std::shared_ptr<Texture> pCubeTexture_;
+     std::shared_ptr<TextureArray> pCubeTexture_;
      std::shared_ptr<Texture> pCubeNormalMap_;
      std::shared_ptr<CubeMap> pCubeMap_;
      std::shared_ptr<Lights> pLights_;
@@ -91,4 +94,11 @@ private:
      unsigned height_;
 
      std::size_t start_;
+
+     struct CubeModel
+     {
+          DirectX::XMFLOAT4 pos;
+          DirectX::XMFLOAT4 shineSpeedIdNm;
+     };
+     std::vector<CubeModel> cubes_;
 };

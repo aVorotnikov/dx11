@@ -4,7 +4,7 @@
 
 Texture::Texture(
      ID3D11Device *device,
-     std::wstring fileName,
+     const std::wstring& fileName,
      const D3D11_SAMPLER_DESC &samplerDesc) : pTextureView_(NULL), pSampler_(NULL)
 {
      if (FAILED(DirectX::CreateDDSTextureFromFile(device, fileName.c_str(), nullptr, &pTextureView_)))
@@ -19,7 +19,7 @@ Texture::Texture(
 Texture::Texture(
      ID3D11Device *device,
      ID3D11DeviceContext *context,
-     std::wstring fileName,
+     const std::wstring& fileName,
      const D3D11_SAMPLER_DESC &samplerDesc) : pTextureView_(NULL), pSampler_(NULL)
 {
      if (FAILED(DirectX::CreateDDSTextureFromFileEx(

@@ -171,6 +171,7 @@
     <ClCompile Include="lights.cpp" />
     <ClCompile Include="render_texture.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="texture_array.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -184,6 +185,7 @@
     <ClInclude Include="renderer.h" />
     <ClInclude Include="render_texture.h" />
     <ClInclude Include="texture.h" />
+    <ClInclude Include="texture_array.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -258,6 +260,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="calculate_light.hlsli" />
+    <None Include="defines.hlsli" />
+    <None Include="geom_buffer.hlsli" />
+    <None Include="light_buffer.hlsli" />
     <None Include="scene_buffer.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

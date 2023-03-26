@@ -10,6 +10,8 @@
 namespace
 {
 
+     constexpr const std::size_t maxCubeNumber = 100;
+
      struct Vertex
      {
           DirectX::XMFLOAT3 pos;
@@ -26,17 +28,23 @@ namespace
      struct SceneBuffer
      {
           DirectX::XMMATRIX viewProjMatrix;
+          DirectX::XMINT4 indexBuffer[maxCubeNumber];
+     };
+
+     struct GeomBuffer
+     {
+          DirectX::XMMATRIX worldMatrix;
+          DirectX::XMMATRIX norm;
+          DirectX::XMFLOAT4 shineSpeedTexIdNm;
+     };
+
+     struct LightBuffer
+     {
           DirectX::XMFLOAT4 cameraPosition;
-          int lightCount[4];
+          DirectX::XMINT4 lightCount;
           DirectX::XMFLOAT4 lightPositions[maxLightNumber];
           DirectX::XMFLOAT4 lightColors[maxLightNumber];
           DirectX::XMFLOAT4 ambientColor;
-     };
-
-     struct WorldBuffer
-     {
-          DirectX::XMMATRIX worldMatrix;
-          DirectX::XMFLOAT4 shine;
      };
 
      struct TransparentWorldBuffer
@@ -125,8 +133,8 @@ Renderer::Renderer() :
      pInputLayout_(NULL),
      pVertexBuffer_(NULL),
      pIndexBuffer_(NULL),
-     pWorldBuffer_(NULL),
-     pWorldBuffer1_(NULL),
+     pGeomBuffer_(NULL),
+     pLightBuffer_(NULL),
      pSceneBuffer_(NULL),
      pRasterizerState_(NULL),
      pDepthState_(NULL),
@@ -138,6 +146,7 @@ Renderer::Renderer() :
      pTransparentWorldBuffer_(NULL),
      pTransparentWorldBuffer1_(NULL),
      pTransparentSceneBuffer_(NULL),
+     pTransparentLightBuffer_(NULL),
      pTransparentRasterizerState_(NULL),
      pTransparentDepthState_(NULL),
      pTransparentBlendState_(NULL),
@@ -168,6 +177,7 @@ void Renderer::CleanAll()
      SafeRelease(pTransparentBlendState_);
      SafeRelease(pTransparentDepthState_);
      SafeRelease(pTransparentRasterizerState_);
+     SafeRelease(pTransparentLightBuffer_);
      SafeRelease(pTransparentSceneBuffer_);
      SafeRelease(pTransparentWorldBuffer1_);
      SafeRelease(pTransparentWorldBuffer_);
@@ -179,8 +189,8 @@ void Renderer::CleanAll()
      SafeRelease(pDepthState_);
      SafeRelease(pRasterizerState_);
      SafeRelease(pSceneBuffer_);
-     SafeRelease(pWorldBuffer1_);
-     SafeRelease(pWorldBuffer_);
+     SafeRelease(pLightBuffer_);
+     SafeRelease(pGeomBuffer_);
      SafeRelease(pIndexBuffer_);
      SafeRelease(pVertexBuffer_);
      SafeRelease(pInputLayout_);
@@ -411,35 +421,27 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
 
      // Create const buffers
      ZeroMemory(&desc, sizeof(desc));
-     desc.ByteWidth = sizeof(WorldBuffer);
+     desc.ByteWidth = sizeof(GeomBuffer) * maxCubeNumber;
      desc.Usage = D3D11_USAGE_DEFAULT;
      desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
      desc.CPUAccessFlags = 0;
      desc.MiscFlags = 0;
      desc.StructureByteStride = 0;
-
-     result = pDevice_->CreateBuffer(&desc, NULL, &pWorldBuffer_);
+     result = pDevice_->CreateBuffer(&desc, NULL, &pGeomBuffer_);
      if (FAILED(result))
-          return false;
-     result = SetResourceName(pWorldBuffer_, "WorldBuffer");
-     if (FAILED(result))
-          return false;
-
-     result = pDevice_->CreateBuffer(&desc, NULL, &pWorldBuffer1_);
-     if (FAILED(result))
-          return false;
-     result = SetResourceName(pWorldBuffer1_, "WorldBuffer1");
+     result = SetResourceName(pGeomBuffer_, "GeomBuffer");
      if (FAILED(result))
           return false;
 
-     ZeroMemory(&desc, sizeof(desc));
+     desc.ByteWidth = sizeof(LightBuffer);
+     result = pDevice_->CreateBuffer(&desc, NULL, &pLightBuffer_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pLightBuffer_, "LightBuffer");
+     if (FAILED(result))
+          return false;
+
      desc.ByteWidth = sizeof(SceneBuffer);
-     desc.Usage = D3D11_USAGE_DEFAULT;
-     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-     desc.CPUAccessFlags = 0;
-     desc.MiscFlags = 0;
-     desc.StructureByteStride = 0;
-
      result = pDevice_->CreateBuffer(&desc, NULL, &pSceneBuffer_);
      if (FAILED(result))
           return false;
@@ -479,7 +481,10 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
 
      try
      {
-          pCubeTexture_ = std::make_shared<Texture>(pDevice_, cubeTextureFileName_);
+          pCubeTexture_ = std::make_shared<TextureArray>(
+               pDevice_,
+               pDeviceContext_,
+               std::vector<std::wstring>{cubeTextureFileName_, cubeTextureFileName1_});
           pCubeNormalMap_ = std::make_shared<Texture>(pDevice_, cubeNormalMapFileName_);
           pCubeMap_ = std::make_shared<CubeMap>(pDevice_, pDeviceContext_, width_, height_, fov_, near_);
 
@@ -542,6 +547,19 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
                          return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
                     }
                });
+
+          {
+               CubeModel cm;
+               cm.pos = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+               cm.shineSpeedIdNm = DirectX::XMFLOAT4(300.0f, 1.0f, 0.0f, 1.0f);
+               cubes_.push_back(std::move(cm));
+          }
+          {
+               CubeModel cm;
+               cm.pos = DirectX::XMFLOAT4(0.0f, 0.0f, -1.0f, -3.0f);
+               cm.shineSpeedIdNm = DirectX::XMFLOAT4(200.0f, 1.0f, 1.0f, 0.0f);
+               cubes_.push_back(std::move(cm));
+          }
      }
      catch (...)
      {
@@ -689,6 +707,14 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
      if (FAILED(result))
           return false;
 
+     desc.ByteWidth = sizeof(LightBuffer);
+     result = pDevice_->CreateBuffer(&desc, NULL, &pTransparentLightBuffer_);
+     if (FAILED(result))
+          return false;
+     result = SetResourceName(pTransparentLightBuffer_, "TransparentLightBuffer");
+     if (FAILED(result))
+          return false;
+
      ZeroMemory(&rasterizeDesc, sizeof(rasterizeDesc));
      rasterizeDesc.AntialiasedLineEnable = false;
      rasterizeDesc.FillMode = D3D11_FILL_SOLID;
@@ -747,16 +773,18 @@ bool Renderer::Update()
 
      std::size_t countSec =
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - start_;
-     double angle = static_cast<double>(countSec) / 1000;
-     WorldBuffer worldBuffer;
-     worldBuffer.worldMatrix = DirectX::XMMatrixTranslation(0.0f, 0.0f, -1.0f);
-     worldBuffer.shine.x = 1000.0f;
-     pDeviceContext_->UpdateSubresource(pWorldBuffer_, 0, NULL, &worldBuffer, 0, 0);
+     double angle = static_cast<float>(countSec) / 1000.0f;
 
-     worldBuffer.worldMatrix = DirectX::XMMatrixMultiply(
-          DirectX::XMMatrixRotationX(-static_cast<float>(angle)),
-          DirectX::XMMatrixTranslation(0.0f, 0.0f, 1.0f));
-     pDeviceContext_->UpdateSubresource(pWorldBuffer1_, 0, NULL, &worldBuffer, 0, 0);
+     GeomBuffer geomBuffer[maxCubeNumber];
+     for (std::size_t i = 0; i < cubes_.size(); ++i)
+     {
+          geomBuffer[i].worldMatrix =
+               DirectX::XMMatrixRotationY(static_cast<float>(cubes_[i].pos.w * angle * cubes_[i].shineSpeedIdNm.y)) *
+               DirectX::XMMatrixTranslation(cubes_[i].pos.x, cubes_[i].pos.y, cubes_[i].pos.z);
+          geomBuffer[i].norm = geomBuffer[i].worldMatrix;
+          geomBuffer[i].shineSpeedTexIdNm = cubes_[i].shineSpeedIdNm;
+     }
+     pDeviceContext_->UpdateSubresource(pGeomBuffer_, 0, NULL, &geomBuffer, 0, 0);
 
      TransparentWorldBuffer transparentWorldBuffer;
      transparentWorldBuffer.worldMatrix = DirectX::XMMatrixTranslation(0.0f, 0.0f, -0.1f);
@@ -771,20 +799,26 @@ bool Renderer::Update()
      const auto view = pCamera_->GetView();
      const auto proj = DirectX::XMMatrixPerspectiveFovLH(fov_, width_ / static_cast<float>(height_), far_, near_);
      sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(view, proj);
-     const auto pov = pCamera_->GetPov();
-     sceneBuffer.cameraPosition.x = pov.x;
-     sceneBuffer.cameraPosition.y = pov.y;
-     sceneBuffer.cameraPosition.z = pov.z;
-     sceneBuffer.lightCount[0] = static_cast<int>(pLights_->GetNumber());
-     sceneBuffer.lightCount[1] = showNormalMap_;
-     sceneBuffer.lightCount[2] = showNormals_;
-     auto lightPositions = pLights_->GetPositions(countSec);
-     std::copy(lightPositions.begin(), lightPositions.end(), sceneBuffer.lightPositions);
-     auto lightColors = pLights_->GetColors(countSec);
-     std::copy(lightColors.begin(), lightColors.end(), sceneBuffer.lightColors);
-     sceneBuffer.ambientColor = ambientColor_;
+     for (int i = 0; i < cubes_.size(); ++i)
+          sceneBuffer.indexBuffer[i] = DirectX::XMINT4(i, 0, 0, 0);
      pDeviceContext_->UpdateSubresource(pSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
      pDeviceContext_->UpdateSubresource(pTransparentSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
+
+     LightBuffer lightBuffer;
+     const auto pov = pCamera_->GetPov();
+     lightBuffer.cameraPosition.x = pov.x;
+     lightBuffer.cameraPosition.y = pov.y;
+     lightBuffer.cameraPosition.z = pov.z;
+     lightBuffer.lightCount.x = static_cast<int>(pLights_->GetNumber());
+     lightBuffer.lightCount.y = showNormalMap_;
+     lightBuffer.lightCount.z = showNormals_;
+     auto lightPositions = pLights_->GetPositions(countSec);
+     std::copy(lightPositions.begin(), lightPositions.end(), lightBuffer.lightPositions);
+     auto lightColors = pLights_->GetColors(countSec);
+     std::copy(lightColors.begin(), lightColors.end(), lightBuffer.lightColors);
+     lightBuffer.ambientColor = ambientColor_;
+     pDeviceContext_->UpdateSubresource(pLightBuffer_, 0, NULL, &lightBuffer, 0, 0);
+     pDeviceContext_->UpdateSubresource(pTransparentLightBuffer_, 0, NULL, &lightBuffer, 0, 0);
 
      pCubeMap_->Update(view, proj, pov);
 
@@ -820,7 +854,7 @@ bool Renderer::Render()
      ID3D11SamplerState *samplers[] = {pCubeTexture_->GetSampler(), pCubeNormalMap_->GetSampler()};
      pDeviceContext_->PSSetSamplers(0, 2, samplers);
 
-     ID3D11ShaderResourceView *resources[] = {pCubeTexture_->GetTexture(), pCubeNormalMap_->GetTexture()};
+     ID3D11ShaderResourceView *resources[] = {pCubeTexture_->GetTextures(), pCubeNormalMap_->GetTexture()};
      pDeviceContext_->PSSetShaderResources(0, 2, resources);
 
      pDeviceContext_->IASetIndexBuffer(pIndexBuffer_, DXGI_FORMAT_R16_UINT, 0);
@@ -831,16 +865,18 @@ bool Renderer::Render()
      pDeviceContext_->IASetInputLayout(pInputLayout_);
      pDeviceContext_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
      pDeviceContext_->VSSetShader(pVertexShader_, NULL, 0);
-     pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer_);
+     pDeviceContext_->VSSetConstantBuffers(0, 1, &pGeomBuffer_);
      pDeviceContext_->VSSetConstantBuffers(1, 1, &pSceneBuffer_);
-     pDeviceContext_->PSSetConstantBuffers(0, 1, &pWorldBuffer_);
-     pDeviceContext_->PSSetConstantBuffers(1, 1, &pSceneBuffer_);
      pDeviceContext_->PSSetShader(pPixelShader_, NULL, 0);
-     pDeviceContext_->DrawIndexed(static_cast<UINT>(cubeIndices.size()), 0, 0);
-
-     pDeviceContext_->VSSetConstantBuffers(0, 1, &pWorldBuffer1_);
-     pDeviceContext_->PSSetConstantBuffers(0, 1, &pWorldBuffer1_);
-     pDeviceContext_->DrawIndexed(static_cast<UINT>(cubeIndices.size()), 0, 0);
+     pDeviceContext_->PSSetConstantBuffers(0, 1, &pGeomBuffer_);
+     pDeviceContext_->PSSetConstantBuffers(1, 1, &pSceneBuffer_);
+     pDeviceContext_->PSSetConstantBuffers(2, 1, &pLightBuffer_);
+     pDeviceContext_->DrawIndexedInstanced(
+          static_cast<UINT>(cubeIndices.size()),
+          static_cast<UINT>(cubes_.size()),
+          0,
+          0,
+          0);
 
      pCubeMap_->Render();
 
@@ -858,6 +894,7 @@ bool Renderer::Render()
      pDeviceContext_->OMSetDepthStencilState(pTransparentDepthState_, 0);
 
      pDeviceContext_->VSSetConstantBuffers(1, 1, &pTransparentSceneBuffer_);
+     pDeviceContext_->VSSetConstantBuffers(2, 1, &pTransparentLightBuffer_);
      pDeviceContext_->PSSetShader(pTransparentPixelShader_, NULL, 0);
 
      pDeviceContext_->VSSetConstantBuffers(0, 1, &pTransparentWorldBuffer_);

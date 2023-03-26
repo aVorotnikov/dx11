@@ -49,6 +49,9 @@
     <Filter Include="Исходные файлы\renderer\post_effect">
       <UniqueIdentifier>{e1d64ab7-3199-47a2-88a1-0ce45567b4d6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы ресурсов\shaders\headers">
+      <UniqueIdentifier>{f0151435-422b-44b2-bf9c-0d95d8a1966b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -87,6 +90,9 @@
     <ClCompile Include="post_effect.cpp">
       <Filter>Исходные файлы\renderer\post_effect</Filter>
     </ClCompile>
+    <ClCompile Include="texture_array.cpp">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer.h">
@@ -122,11 +128,11 @@
     <ClInclude Include="post_effect.h">
       <Filter>Исходные файлы\renderer\post_effect</Filter>
     </ClInclude>
+    <ClInclude Include="texture_array.h">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="cube_vertex.hlsl">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </FxCompile>
     <FxCompile Include="cube_pixel.hlsl">
       <Filter>Файлы ресурсов\shaders</Filter>
     </FxCompile>
@@ -148,13 +154,25 @@
     <FxCompile Include="post_effect_pixel.hlsl">
       <Filter>Файлы ресурсов\shaders</Filter>
     </FxCompile>
+    <FxCompile Include="cube_vertex.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="scene_buffer.hlsli">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
     <None Include="calculate_light.hlsli">
-      <Filter>Файлы ресурсов\shaders</Filter>
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="scene_buffer.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="light_buffer.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="geom_buffer.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="defines.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
     </None>
   </ItemGroup>
 </Project>
