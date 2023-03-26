@@ -144,6 +144,9 @@ Renderer::Renderer() :
      pCubeTexture_(nullptr),
      pCubeNormalMap_(nullptr),
      pCubeMap_(nullptr),
+     pLights_(nullptr),
+     pRenderTexture_(nullptr),
+     pPostEffect_(nullptr),
      pCamera_(nullptr),
      pInput_(nullptr),
      width_(defaultWidth),
@@ -479,8 +482,11 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
           pCubeTexture_ = std::make_shared<Texture>(pDevice_, cubeTextureFileName_);
           pCubeNormalMap_ = std::make_shared<Texture>(pDevice_, cubeNormalMapFileName_);
           pCubeMap_ = std::make_shared<CubeMap>(pDevice_, pDeviceContext_, width_, height_, fov_, near_);
-          pLights_ = std::make_shared<Lights>();
 
+          pRenderTexture_ = std::make_shared<RenderTexture>(pDevice_, width_, height_);
+          pPostEffect_ = std::make_shared<PostEffect>(pDevice_, hWnd, width_, height_);
+
+          pLights_ = std::make_shared<Lights>();
           pLights_->Add(
                {
                     [](std::size_t milliseconds)
@@ -788,12 +794,6 @@ bool Renderer::Update()
 bool Renderer::Render()
 {
      pDeviceContext_->ClearState();
-     ID3D11RenderTargetView *views[] = {pBackBufferRTV_};
-     pDeviceContext_->OMSetRenderTargets(1, views, pDepthBufferDSV_);
-
-     static const FLOAT backColor[4] = {0.3f, 0.5f, 0.7f, 1.0f};
-     pDeviceContext_->ClearRenderTargetView(pBackBufferRTV_, backColor);
-     pDeviceContext_->ClearDepthStencilView(pDepthBufferDSV_, D3D11_CLEAR_DEPTH, 0.0f, 0);
 
      D3D11_VIEWPORT viewport;
      viewport.TopLeftX = 0;
@@ -810,6 +810,9 @@ bool Renderer::Render()
      rect.right = width_;
      rect.bottom = height_;
      pDeviceContext_->RSSetScissorRects(1, &rect);
+
+     pRenderTexture_->SetRenderTarget(pDeviceContext_, pDepthBufferDSV_);
+     pRenderTexture_->ClearRenderTarget(pDeviceContext_, pDepthBufferDSV_, DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
 
      pDeviceContext_->RSSetState(pRasterizerState_);
      pDeviceContext_->OMSetDepthStencilState(pDepthState_, 0);
@@ -864,6 +867,15 @@ bool Renderer::Render()
      pDeviceContext_->VSSetConstantBuffers(0, 1, &pTransparentWorldBuffer1_);
      pDeviceContext_->PSSetConstantBuffers(0, 1, &pTransparentWorldBuffer1_);
      pDeviceContext_->DrawIndexed(static_cast<UINT>(coloredPlaneIndices.size()), 0, 0);
+
+     ID3D11RenderTargetView *views[] = {pBackBufferRTV_};
+     pDeviceContext_->OMSetRenderTargets(1, views, pDepthBufferDSV_);
+
+     static const FLOAT BackColor[4] = {0.3f, 0.5f, 0.7f, 1.0f};
+     pDeviceContext_->ClearRenderTargetView(pBackBufferRTV_, BackColor);
+     pDeviceContext_->ClearDepthStencilView(pDepthBufferDSV_, D3D11_CLEAR_DEPTH, 0.0f, 0);
+
+    pPostEffect_->Process(pDeviceContext_, pRenderTexture_->GetSRV(), pBackBufferRTV_, viewport);
 
      HRESULT result = pSwapChain_->Present(0, 0);
      if (!SUCCEEDED(result))

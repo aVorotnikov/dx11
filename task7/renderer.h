@@ -5,6 +5,8 @@
 #include "texture.h"
 #include "cube_map.h"
 #include "lights.h"
+#include "render_texture.h"
+#include "post_effect.h"
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -79,6 +81,8 @@ private:
      std::shared_ptr<Texture> pCubeNormalMap_;
      std::shared_ptr<CubeMap> pCubeMap_;
      std::shared_ptr<Lights> pLights_;
+     std::shared_ptr<RenderTexture> pRenderTexture_;
+     std::shared_ptr<PostEffect> pPostEffect_;
 
      std::shared_ptr<Camera> pCamera_;
      std::shared_ptr<Input> pInput_;

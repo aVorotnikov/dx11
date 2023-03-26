@@ -43,6 +43,12 @@
     <Filter Include="Файлы ресурсов\shaders">
       <UniqueIdentifier>{8f0956ae-869d-418f-ad8e-2473be27f30b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\renderer\render_texture">
+      <UniqueIdentifier>{d8d3d872-9afb-4cb6-a6b2-801eaaec96b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\post_effect">
+      <UniqueIdentifier>{e1d64ab7-3199-47a2-88a1-0ce45567b4d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -75,6 +81,12 @@
     <ClCompile Include="D3DInclude.cpp">
       <Filter>Исходные файлы\utils\D3DInclude</Filter>
     </ClCompile>
+    <ClCompile Include="render_texture.cpp">
+      <Filter>Исходные файлы\renderer\render_texture</Filter>
+    </ClCompile>
+    <ClCompile Include="post_effect.cpp">
+      <Filter>Исходные файлы\renderer\post_effect</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer.h">
@@ -104,6 +116,12 @@
     <ClInclude Include="D3DInclude.h">
       <Filter>Исходные файлы\utils\D3DInclude</Filter>
     </ClInclude>
+    <ClInclude Include="render_texture.h">
+      <Filter>Исходные файлы\renderer\render_texture</Filter>
+    </ClInclude>
+    <ClInclude Include="post_effect.h">
+      <Filter>Исходные файлы\renderer\post_effect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="cube_vertex.hlsl">
@@ -122,6 +140,12 @@
       <Filter>Файлы ресурсов\shaders</Filter>
     </FxCompile>
     <FxCompile Include="color_vertex.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="post_effect_vertex.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="post_effect_pixel.hlsl">
       <Filter>Файлы ресурсов\shaders</Filter>
     </FxCompile>
   </ItemGroup>
