@@ -8,6 +8,7 @@
 #include "lights.h"
 #include "render_texture.h"
 #include "post_effect.h"
+#include "frustum.h"
 
 #include <d3d11.h>
 #include <dxgi.h>
@@ -86,6 +87,7 @@ private:
      std::shared_ptr<Lights> pLights_;
      std::shared_ptr<RenderTexture> pRenderTexture_;
      std::shared_ptr<PostEffect> pPostEffect_;
+     std::shared_ptr<Frustum> pFrustum_;
 
      std::shared_ptr<Camera> pCamera_;
      std::shared_ptr<Input> pInput_;
@@ -101,4 +103,5 @@ private:
           DirectX::XMFLOAT4 shineSpeedIdNm;
      };
      std::vector<CubeModel> cubes_;
+     std::vector<std::size_t> cubeIndices_;
 };

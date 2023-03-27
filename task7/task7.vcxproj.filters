@@ -52,6 +52,9 @@
     <Filter Include="Файлы ресурсов\shaders\headers">
       <UniqueIdentifier>{f0151435-422b-44b2-bf9c-0d95d8a1966b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Исходные файлы\renderer\frustum">
+      <UniqueIdentifier>{478eab17-0ebd-4eae-a62f-7627c9437ace}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -93,6 +96,9 @@
     <ClCompile Include="texture_array.cpp">
       <Filter>Исходные файлы\renderer\texture</Filter>
     </ClCompile>
+    <ClCompile Include="frustum.cpp">
+      <Filter>Исходные файлы\renderer\frustum</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer.h">
@@ -130,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="texture_array.h">
       <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="frustum.h">
+      <Filter>Исходные файлы\renderer\frustum</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

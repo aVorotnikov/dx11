@@ -164,6 +164,7 @@
     <ClCompile Include="cube_map.cpp" />
     <ClCompile Include="D3DInclude.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
+    <ClCompile Include="frustum.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="post_effect.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="cube_map.h" />
     <ClInclude Include="D3DInclude.h" />
     <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="frustum.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="lights.h" />
     <ClInclude Include="post_effect.h" />

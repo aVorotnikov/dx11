@@ -58,7 +58,7 @@ namespace
           return pResource->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)name.length(), name.c_str());
      }
 
-     static const std::array<Vertex, 24> cubeVertices =
+     const std::array<Vertex, 24> cubeVertices =
      {
           Vertex{{-0.5, -0.5, 0.5}, {0, 1}, {0, -1, 0}, {1, 0, 0}},
           Vertex{{0.5, -0.5, 0.5}, {1, 1}, {0, -1, 0}, {1, 0, 0}},
@@ -91,7 +91,13 @@ namespace
           Vertex{{-0.5, 0.5, -0.5}, {0, 0}, {0, 0, -1}, {1, 0, 0}}
      };
 
-     static const std::array<USHORT, 36> cubeIndices =
+     const DirectX::XMFLOAT4 cubeAabb[] =
+     {
+          {-0.5f, -0.5f, -0.5f, 1.0f},
+          {0.5f, 0.5f, 0.5f, 1.0f}
+     };
+
+     const std::array<USHORT, 36> cubeIndices =
      {
           0, 2, 1, 0, 3, 2,
           4, 6, 5, 4, 7, 6,
@@ -101,7 +107,7 @@ namespace
           20, 22, 21, 20, 23, 22
      };
 
-     static const std::array<VertexPos, 4> coloredPlaneVertices =
+     const std::array<VertexPos, 4> coloredPlaneVertices =
      {
           VertexPos{-1.0, -1.0, 0},
           VertexPos{-1.0, 1.0, 0},
@@ -109,7 +115,7 @@ namespace
           VertexPos{1.0, -1.0, 0},
      };
 
-     static const std::array<USHORT, 6> coloredPlaneIndices =
+     const std::array<USHORT, 6> coloredPlaneIndices =
      {
           0, 2, 1, 0, 3, 2,
      };
@@ -156,6 +162,7 @@ Renderer::Renderer() :
      pLights_(nullptr),
      pRenderTexture_(nullptr),
      pPostEffect_(nullptr),
+     pFrustum_(nullptr),
      pCamera_(nullptr),
      pInput_(nullptr),
      width_(defaultWidth),
@@ -490,6 +497,7 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
 
           pRenderTexture_ = std::make_shared<RenderTexture>(pDevice_, width_, height_);
           pPostEffect_ = std::make_shared<PostEffect>(pDevice_, hWnd, width_, height_);
+          pFrustum_ = std::make_shared<Frustum>(near_);
 
           pLights_ = std::make_shared<Lights>();
           pLights_->Add(
@@ -834,8 +842,20 @@ bool Renderer::Update()
      const auto view = pCamera_->GetView();
      const auto proj = DirectX::XMMatrixPerspectiveFovLH(fov_, width_ / static_cast<float>(height_), far_, near_);
      sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(view, proj);
-     for (int i = 0; i < cubes_.size(); ++i)
-          sceneBuffer.indexBuffer[i] = DirectX::XMINT4(i, 0, 0, 0);
+     pFrustum_->Construct(view, proj);
+     cubeIndices_.clear();
+     cubeIndices_.reserve(maxCubeNumber);
+     for (std::size_t i = 0; i < cubes_.size(); ++i)
+     {
+          DirectX::XMFLOAT4 min;
+          XMStoreFloat4(&min, DirectX::XMVector4Transform(XMLoadFloat4(&(cubeAabb[0])), geomBuffer[i].worldMatrix));
+          DirectX::XMFLOAT4 max;
+          XMStoreFloat4(&max, DirectX::XMVector4Transform(XMLoadFloat4(&(cubeAabb[1])), geomBuffer[i].worldMatrix));
+          if (pFrustum_->CheckRectangle(max.x, max.y, max.z, min.x, min.y, min.z))
+               cubeIndices_.push_back(i);
+     }
+     for (int i = 0; i < cubeIndices_.size(); ++i)
+          sceneBuffer.indexBuffer[i] = DirectX::XMINT4(static_cast<int>(cubeIndices_[i]), 0, 0, 0);
      pDeviceContext_->UpdateSubresource(pSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
      pDeviceContext_->UpdateSubresource(pTransparentSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
 
