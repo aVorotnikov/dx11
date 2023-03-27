@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Исходные файлы">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Файлы заголовков">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Файлы ресурсов">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer">
+      <UniqueIdentifier>{f5bb1935-863d-4163-b8e2-107a447d3736}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\camera">
+      <UniqueIdentifier>{e6603812-e376-4503-900d-18040f21c747}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\input">
+      <UniqueIdentifier>{568be6af-3729-43ac-9322-65c6fc044258}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\texture">
+      <UniqueIdentifier>{eae08716-e3f9-42bf-8177-0fad5b8ccb33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\texture\dds_uploader">
+      <UniqueIdentifier>{5017091f-73fe-4087-8c99-0785916aa5f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\utils">
+      <UniqueIdentifier>{64aa6cd8-7f97-49cb-8b8a-d16e4b0320af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\cube_map">
+      <UniqueIdentifier>{f81aec45-6d80-4389-bc83-9405b720c868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\lights">
+      <UniqueIdentifier>{7ee96660-f1cd-4a58-b98e-e8c1bc186ab7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\utils\D3DInclude">
+      <UniqueIdentifier>{47134639-0fb7-48ed-8dd5-38a73c75fbb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы ресурсов\shaders">
+      <UniqueIdentifier>{8f0956ae-869d-418f-ad8e-2473be27f30b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\render_texture">
+      <UniqueIdentifier>{d8d3d872-9afb-4cb6-a6b2-801eaaec96b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\post_effect">
+      <UniqueIdentifier>{e1d64ab7-3199-47a2-88a1-0ce45567b4d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы ресурсов\shaders\headers">
+      <UniqueIdentifier>{f0151435-422b-44b2-bf9c-0d95d8a1966b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\renderer\frustum">
+      <UniqueIdentifier>{478eab17-0ebd-4eae-a62f-7627c9437ace}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <Filter>Исходные файлы\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Исходные файлы\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>Исходные файлы\input</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>Исходные файлы\renderer\texture\dds_uploader</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="cube_map.cpp">
+      <Filter>Исходные файлы\renderer\cube_map</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Исходные файлы\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="lights.cpp">
+      <Filter>Исходные файлы\renderer\lights</Filter>
+    </ClCompile>
+    <ClCompile Include="D3DInclude.cpp">
+      <Filter>Исходные файлы\utils\D3DInclude</Filter>
+    </ClCompile>
+    <ClCompile Include="render_texture.cpp">
+      <Filter>Исходные файлы\renderer\render_texture</Filter>
+    </ClCompile>
+    <ClCompile Include="post_effect.cpp">
+      <Filter>Исходные файлы\renderer\post_effect</Filter>
+    </ClCompile>
+    <ClCompile Include="texture_array.cpp">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="frustum.cpp">
+      <Filter>Исходные файлы\renderer\frustum</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="renderer.h">
+      <Filter>Исходные файлы\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Исходные файлы\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="input.h">
+      <Filter>Исходные файлы\input</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>Исходные файлы\renderer\texture\dds_uploader</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Исходные файлы\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="cube_map.h">
+      <Filter>Исходные файлы\renderer\cube_map</Filter>
+    </ClInclude>
+    <ClInclude Include="lights.h">
+      <Filter>Исходные файлы\renderer\lights</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DInclude.h">
+      <Filter>Исходные файлы\utils\D3DInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="render_texture.h">
+      <Filter>Исходные файлы\renderer\render_texture</Filter>
+    </ClInclude>
+    <ClInclude Include="post_effect.h">
+      <Filter>Исходные файлы\renderer\post_effect</Filter>
+    </ClInclude>
+    <ClInclude Include="texture_array.h">
+      <Filter>Исходные файлы\renderer\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="frustum.h">
+      <Filter>Исходные файлы\renderer\frustum</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="cube_pixel.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="cube_map_vertex.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="cube_map_pixel.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="color_pixel.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="color_vertex.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="post_effect_vertex.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="post_effect_pixel.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="cube_vertex.hlsl">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="calculate_light.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="scene_buffer.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="light_buffer.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="geom_buffer.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+    <None Include="defines.hlsli">
+      <Filter>Файлы ресурсов\shaders\headers</Filter>
+    </None>
+  </ItemGroup>
+</Project>
