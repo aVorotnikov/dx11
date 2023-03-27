@@ -19,6 +19,10 @@ RenderTexture::~RenderTexture()
 
 bool RenderTexture::Resize(const unsigned width, const unsigned height)
 {
+     SafeRelease(pSRV_);
+     SafeRelease(pRTV_);
+     SafeRelease(pRTTexture_);
+
      D3D11_TEXTURE2D_DESC textureDesc;
      ZeroMemory(&textureDesc, sizeof(textureDesc));
 

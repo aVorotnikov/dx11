@@ -1050,6 +1050,8 @@ bool Renderer::Resize(const unsigned width, const unsigned height)
      height_ = height;
 
      pCubeMap_->Resize(width, height);
+     pRenderTexture_->Resize(width, height);
+     pPostEffect_->Resize(width, height);
 
      D3D11_VIEWPORT vp;
      vp.Width = (FLOAT)width;
