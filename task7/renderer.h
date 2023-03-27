@@ -39,6 +39,7 @@ private:
      static constexpr const WCHAR cubeTextureFileName_[] = L"images/rainbow.dds";
      static constexpr const WCHAR cubeNormalMapFileName_[] = L"images/brick_normal.dds";
      static constexpr const WCHAR cubeTextureFileName1_[] = L"images/pomogite.dds";
+     static constexpr const WCHAR cubeTextureFileName2_[] = L"images/random.dds";
 
      static constexpr const float near_ = 0.1f;
      static constexpr const float far_ = 100.0f;

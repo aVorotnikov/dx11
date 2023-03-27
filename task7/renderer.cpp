@@ -491,7 +491,7 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
           pCubeTexture_ = std::make_shared<TextureArray>(
                pDevice_,
                pDeviceContext_,
-               std::vector<std::wstring>{cubeTextureFileName_, cubeTextureFileName1_});
+               std::vector<std::wstring>{cubeTextureFileName_, cubeTextureFileName1_, cubeTextureFileName2_});
           pCubeNormalMap_ = std::make_shared<Texture>(pDevice_, cubeNormalMapFileName_);
           pCubeMap_ = std::make_shared<CubeMap>(pDevice_, pDeviceContext_, width_, height_, fov_, near_);
 
@@ -555,6 +555,22 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
                          return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
                     }
                });
+          pLights_->Add(
+               {
+                    [](std::size_t milliseconds)
+                    {
+                         constexpr const float dist = 5;
+                         return DirectX::XMFLOAT4(
+                              dist * std::sin(milliseconds / 500.0f),
+                              1.5f,
+                              dist * std::cos(milliseconds / 500.0f),
+                              0.0f);
+                    },
+                    [](std::size_t milliseconds)
+                    {
+                         return DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+                    }
+               });
 
           {
                CubeModel cm;
@@ -571,7 +587,7 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
           {
                CubeModel cm;
                cm.pos = DirectX::XMFLOAT4(0.0f, 0.0f, -2.5f, -0.5f);
-               cm.shineSpeedIdNm = DirectX::XMFLOAT4(200.0f, 1.0f, 1.0f, 1.0f);
+               cm.shineSpeedIdNm = DirectX::XMFLOAT4(200.0f, 1.0f, 2.0f, 1.0f);
                cubes_.push_back(std::move(cm));
           }
 
@@ -583,9 +599,9 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
                          3.0f + i * 1.5f,
                          0.0f,
                          -4.0f + j * 2.0f,
-                         static_cast<float>(rand() % 201 - 100) / 100);
-                    auto texId = std::rand() % 2;
-                    cm.shineSpeedIdNm = DirectX::XMFLOAT4(300.0f, 1.0f, static_cast<float>(texId), static_cast<float>(!texId));
+                         static_cast<float>(rand() % 401 - 200) / 100);
+                    auto texId = std::rand() % 3;
+                    cm.shineSpeedIdNm = DirectX::XMFLOAT4(300.0f, 1.0f, static_cast<float>(texId), static_cast<float>(0 == texId));
                     cubes_.push_back(std::move(cm));
                }
 
@@ -598,9 +614,9 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
                     -dist * std::sin(phi),
                     0.0f,
                     dist * std::cos(phi),
-                    static_cast<float>(rand() % 401 - 200) / 100);
-               auto texId = std::rand() % 2;
-               cm.shineSpeedIdNm = DirectX::XMFLOAT4(300.0f, 1.0f, static_cast<float>(texId), static_cast<float>(!texId));
+                    static_cast<float>(rand() % 801 - 400) / 100);
+               auto texId = std::rand() % 3;
+               cm.shineSpeedIdNm = DirectX::XMFLOAT4(300.0f, 1.0f, static_cast<float>(texId), static_cast<float>(0 == texId));
                cubes_.push_back(std::move(cm));
           }
      }
