@@ -104,5 +104,5 @@ private:
           DirectX::XMFLOAT4 shineSpeedIdNm;
      };
      std::vector<CubeModel> cubes_;
-     std::vector<std::size_t> cubeIndices_;
+     std::vector<CubeModel> cubesToRender_;
 };

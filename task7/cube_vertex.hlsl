@@ -24,7 +24,7 @@ VSOutput main(VSInput input)
 {
      VSOutput output;
 
-     unsigned int idx = indexBuffer[input.instanceId].x;
+     unsigned int idx = input.instanceId;
      output.worldPos = mul(geomBuffer[idx].world, float4(input.position, 1.0f));
      output.position = mul(viewProj, output.worldPos);
      output.texCoord = input.texCoord;

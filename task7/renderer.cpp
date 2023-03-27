@@ -28,7 +28,7 @@ namespace
      struct SceneBuffer
      {
           DirectX::XMMATRIX viewProjMatrix;
-          DirectX::XMINT4 indexBuffer[maxCubeNumber];
+          DirectX::XMINT4 indexBuffer;
      };
 
      struct GeomBuffer
@@ -93,8 +93,8 @@ namespace
 
      const DirectX::XMFLOAT4 cubeAabb[] =
      {
-          {-0.5f, -0.5f, -0.5f, 1.0f},
-          {0.5f, 0.5f, 0.5f, 1.0f}
+          {-1.0f, -1.0f, -1.0f, 1.0f},
+          {1.0f, 1.0f, 1.0f, 1.0f}
      };
 
      const std::array<USHORT, 36> cubeIndices =
@@ -834,17 +834,6 @@ bool Renderer::Update()
           std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() - start_;
      double angle = static_cast<float>(countSec) / 1000.0f;
 
-     GeomBuffer geomBuffer[maxCubeNumber];
-     for (std::size_t i = 0; i < cubes_.size(); ++i)
-     {
-          geomBuffer[i].worldMatrix =
-               DirectX::XMMatrixRotationY(static_cast<float>(cubes_[i].pos.w * angle * cubes_[i].shineSpeedIdNm.y)) *
-               DirectX::XMMatrixTranslation(cubes_[i].pos.x, cubes_[i].pos.y, cubes_[i].pos.z);
-          geomBuffer[i].norm = geomBuffer[i].worldMatrix;
-          geomBuffer[i].shineSpeedTexIdNm = cubes_[i].shineSpeedIdNm;
-     }
-     pDeviceContext_->UpdateSubresource(pGeomBuffer_, 0, NULL, &geomBuffer, 0, 0);
-
      TransparentWorldBuffer transparentWorldBuffer;
      transparentWorldBuffer.worldMatrix = DirectX::XMMatrixTranslation(0.0f, 0.0f, -0.1f);
      transparentWorldBuffer.color = DirectX::XMFLOAT4(1.0f, 1.0f, 0.0f, 0.5f);
@@ -859,21 +848,37 @@ bool Renderer::Update()
      const auto proj = DirectX::XMMatrixPerspectiveFovLH(fov_, width_ / static_cast<float>(height_), far_, near_);
      sceneBuffer.viewProjMatrix = DirectX::XMMatrixMultiply(view, proj);
      pFrustum_->Construct(view, proj);
-     cubeIndices_.clear();
-     cubeIndices_.reserve(maxCubeNumber);
+     cubesToRender_.clear();
+     cubesToRender_.reserve(maxCubeNumber);
+     std::vector<DirectX::XMMATRIX> worldMatrices;
+     worldMatrices.reserve(maxCubeNumber);
      for (std::size_t i = 0; i < cubes_.size(); ++i)
      {
+          DirectX::XMMATRIX world =
+               DirectX::XMMatrixRotationY(static_cast<float>(cubes_[i].pos.w * angle * cubes_[i].shineSpeedIdNm.y)) *
+               DirectX::XMMatrixTranslation(cubes_[i].pos.x, cubes_[i].pos.y, cubes_[i].pos.z);
           DirectX::XMFLOAT4 min;
-          XMStoreFloat4(&min, DirectX::XMVector4Transform(XMLoadFloat4(&(cubeAabb[0])), geomBuffer[i].worldMatrix));
+          XMStoreFloat4(&min, DirectX::XMVector4Transform(XMLoadFloat4(&(cubeAabb[0])), world));
           DirectX::XMFLOAT4 max;
-          XMStoreFloat4(&max, DirectX::XMVector4Transform(XMLoadFloat4(&(cubeAabb[1])), geomBuffer[i].worldMatrix));
+          XMStoreFloat4(&max, DirectX::XMVector4Transform(XMLoadFloat4(&(cubeAabb[1])), world));
           if (pFrustum_->CheckRectangle(max.x, max.y, max.z, min.x, min.y, min.z))
-               cubeIndices_.push_back(i);
+          {
+               worldMatrices.push_back(std::move(world));
+               cubesToRender_.push_back(cubes_[i]);
+          }
      }
-     for (int i = 0; i < cubeIndices_.size(); ++i)
-          sceneBuffer.indexBuffer[i] = DirectX::XMINT4(static_cast<int>(cubeIndices_[i]), 0, 0, 0);
+     sceneBuffer.indexBuffer = DirectX::XMINT4(static_cast<int>(cubesToRender_.size()), 0, 0, 0);
      pDeviceContext_->UpdateSubresource(pSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
      pDeviceContext_->UpdateSubresource(pTransparentSceneBuffer_, 0, NULL, &sceneBuffer, 0, 0);
+
+     GeomBuffer geomBuffer[maxCubeNumber];
+     for (std::size_t i = 0; i < cubesToRender_.size(); ++i)
+     {
+          geomBuffer[i].worldMatrix = worldMatrices[i];
+          geomBuffer[i].norm = geomBuffer[i].worldMatrix;
+          geomBuffer[i].shineSpeedTexIdNm = cubesToRender_[i].shineSpeedIdNm;
+     }
+     pDeviceContext_->UpdateSubresource(pGeomBuffer_, 0, NULL, &geomBuffer, 0, 0);
 
      LightBuffer lightBuffer;
      const auto pov = pCamera_->GetPov();
@@ -944,7 +949,7 @@ bool Renderer::Render()
      pDeviceContext_->PSSetConstantBuffers(2, 1, &pLightBuffer_);
      pDeviceContext_->DrawIndexedInstanced(
           static_cast<UINT>(cubeIndices.size()),
-          static_cast<UINT>(cubes_.size()),
+          static_cast<UINT>(cubesToRender_.size()),
           0,
           0,
           0);
