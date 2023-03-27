@@ -560,6 +560,41 @@ bool Renderer::Init(const HWND hWnd, std::shared_ptr<Camera> pCamera, std::share
                cm.shineSpeedIdNm = DirectX::XMFLOAT4(200.0f, 1.0f, 1.0f, 0.0f);
                cubes_.push_back(std::move(cm));
           }
+          {
+               CubeModel cm;
+               cm.pos = DirectX::XMFLOAT4(0.0f, 0.0f, -2.5f, -0.5f);
+               cm.shineSpeedIdNm = DirectX::XMFLOAT4(200.0f, 1.0f, 1.0f, 1.0f);
+               cubes_.push_back(std::move(cm));
+          }
+
+          for (std::size_t i = 0; i < 5; ++i)
+               for (std::size_t j = 0; j < 5; ++j)
+               {
+                    CubeModel cm;
+                    cm.pos = DirectX::XMFLOAT4(
+                         3.0f + i * 1.5f,
+                         0.0f,
+                         -4.0f + j * 2.0f,
+                         static_cast<float>(rand() % 201 - 100) / 100);
+                    auto texId = std::rand() % 2;
+                    cm.shineSpeedIdNm = DirectX::XMFLOAT4(300.0f, 1.0f, static_cast<float>(texId), static_cast<float>(!texId));
+                    cubes_.push_back(std::move(cm));
+               }
+
+          for (std::size_t i = 0; i < 10; ++i)
+          {
+               const float phi = i * DirectX::XM_PI / 9;
+               constexpr const float dist = 5;
+               CubeModel cm;
+               cm.pos = DirectX::XMFLOAT4(
+                    -dist * std::sin(phi),
+                    0.0f,
+                    dist * std::cos(phi),
+                    static_cast<float>(rand() % 401 - 200) / 100);
+               auto texId = std::rand() % 2;
+               cm.shineSpeedIdNm = DirectX::XMFLOAT4(300.0f, 1.0f, static_cast<float>(texId), static_cast<float>(!texId));
+               cubes_.push_back(std::move(cm));
+          }
      }
      catch (...)
      {
